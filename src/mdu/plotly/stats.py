@@ -220,7 +220,7 @@ def add_statsmodel_fit(
     assert len(x.shape) == 1, "x must be a 1D array - TODO: inplement more"
 
     # add constant for intercept
-    x = sm.add_constant(x)
+    x = sm.add_constant(x)  # type: ignore
     model = fitfunc(y, x).fit()
     statframe = model.get_prediction(x).summary_frame(alpha=ci_alpha)
 
@@ -1138,9 +1138,6 @@ def fig_add_clust_spark(
     # so we need to set it manually after adding
     fig.data[trace_start_idx].update(yaxis=secondary_yaxis_anchor)
     fig.data[trace_start_idx + 1].update(yaxis=secondary_yaxis_anchor)
-
-    # Configure the secondary y-axis
-    xaxis_label = matching_ax["xaxis_label"]
 
     # Update layout for secondary y-axis
     fig.update_layout(
