@@ -32,6 +32,11 @@ jobs:
       - name: Build the package (sdist and wheel)
         run: python -m build
 
-      - name: Publish package to PyPI
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # No password/token is needed here if you set up Trusted Publishers on PyPI
