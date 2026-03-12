@@ -80,7 +80,7 @@ execute:
   warning: false
   enabled: true
 
-jupyter: mdu
+jupyter: python3
 
 metadata-files:
   - _quartodoc.yml
