@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix_CI_pipelines
   workflow_dispatch:
 
 permissions:

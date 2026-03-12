@@ -25,12 +25,15 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=9.0.2", "pytest-cov>=7.0.0", "ipython>=8.38.0", "ruff"]
-docs = ["quartodoc", "nbformat", "nbclient", "jupyter-cache", "ipykernel"]
+docs = ["quartodoc", "nbformat", "nbclient", "jupyter-cache", "ipykernel", "griffe<2.0.0"] # griffe<2.0.0 required for quartodoc
 resampler = ["plotly-resampler"]
 ml = ["scikit-learn>=1.0.0"]
-tfr = ["Pillow>=12.0.0", "fire>=0.7.0"]
 dash = ["dash>=2.0.0", "PyYAML>=6.0.0"]
+build = ["build", "twine"]
 all = [
+    "build",
+    "twine", 
+    "griffe<2.0.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ipython>=8.38.0",
@@ -42,7 +45,6 @@ all = [
     "ipykernel",
     "plotly-resampler",
     "scikit-learn>=1.0.0",
-    "Pillow>=12.0.0",
     "fire>=0.7.0",
     "dash>=2.0.0",
     "PyYAML>=6.0.0"
