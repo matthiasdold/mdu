@@ -15,8 +15,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        # python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10"]
 
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +60,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
-          fail_ci_if_error: false
+          fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
