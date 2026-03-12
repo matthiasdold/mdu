@@ -147,8 +147,8 @@ pip install md-utils[all]         # All features
 
 ## Status
 
-![CI](https://github.com/matthiasdold/md_utils/workflows/CI%20Testing/badge.svg?branch=main)
-[![codecov](https://codecov.io/gh/matthiasdold/md_utils/branch/main/graph/badge.svg)](https://codecov.io/gh/matthiasdold/md_utils)
+![CI](https://github.com/matthiasdold/mdu/workflows/CI%20Testing/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/matthiasdold/mdu/branch/main/graph/badge.svg)](https://codecov.io/gh/matthiasdold/mdu)
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 
 - **Test Coverage**: 27%

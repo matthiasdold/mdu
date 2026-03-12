@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develope
   pull_request:
     branches:
       - main
@@ -18,10 +19,10 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       
@@ -35,12 +36,7 @@ jobs:
       
       - name: Install package with dev dependencies
         run: |
-          uv pip install --system ".[dev]"
-      
-      - name: Install optional dependencies for testing
-        run: |
-          uv pip install --system plotly-resampler scikit-learn
-        continue-on-error: true
+          uv pip install --system -e ".[all]"
       
       - name: Lint with Ruff
         run: |
@@ -54,10 +50,9 @@ jobs:
       
       - name: Upload coverage reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 

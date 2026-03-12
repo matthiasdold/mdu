@@ -5,8 +5,8 @@ project:
 website:
   title: "MD Utils"
   description: "Utilities for electrophysiology data analysis"
-  site-url: "https://matthiasdold.github.io/md_utils"
-  repo-url: "https://github.com/matthiasdold/md_utils"
+  site-url: "https://matthiasdold.github.io/mdu"
+  repo-url: "https://github.com/matthiasdold/mdu"
   repo-actions: [edit, issue]
   
   navbar:
@@ -29,7 +29,7 @@ website:
             file: docs/guide/contributing.qmd
     right:
       - icon: github
-        href: "https://github.com/matthiasdold/md_utils"
+        href: "https://github.com/matthiasdold/mdu"
         aria-label: GitHub
 
   sidebar:
@@ -56,7 +56,7 @@ website:
       MD Utils - Electrophysiology Analysis Tools
     right:
       - icon: github
-        href: "https://github.com/matthiasdold/md_utils"
+        href: "https://github.com/matthiasdold/mdu"
         aria-label: GitHub
 
 format:
@@ -80,7 +80,7 @@ execute:
   warning: false
   enabled: true
 
-jupyter: md_utils
+jupyter: python3
 
 metadata-files:
   - _quartodoc.yml
