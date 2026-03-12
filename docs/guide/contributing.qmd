@@ -12,8 +12,8 @@ We welcome contributions to MD Utils! This guide will help you get started.
 
 ```bash
 # Fork on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/md_utils.git
-cd md_utils
+git clone https://github.com/YOUR_USERNAME/mdu.git
+cd mdu
 ```
 
 ### 2. Create Virtual Environment

@@ -26,8 +26,8 @@ uv pip install mdu
 Clone the repository and install in editable mode:
 
 ```bash
-git clone https://github.com/matthiasdold/md_utils.git
-cd md_utils
+git clone https://github.com/matthiasdold/mdu.git
+cd mdu
 pip install -e ".[dev]"
 ```
 

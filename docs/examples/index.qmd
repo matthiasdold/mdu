@@ -57,8 +57,8 @@ The `examples/` folder contains runnable Python scripts:
 Clone the repository and run examples:
 
 ```bash
-git clone https://github.com/matthiasdold/md_utils.git
-cd md_utils
+git clone https://github.com/matthiasdold/mdu.git
+cd mdu
 pip install -e ".[all]"
 python examples/resampler_example.py
 ```

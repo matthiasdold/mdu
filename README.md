@@ -1,7 +1,7 @@
 # MD Utils
 
-![CI](https://github.com/matthiasdold/md_utils/workflows/CI%20Testing/badge.svg?branch=main)
-[![codecov](https://codecov.io/gh/matthiasdold/md_utils/branch/main/graph/badge.svg)](https://codecov.io/gh/matthiasdold/md_utils)
+![CI](https://github.com/matthiasdold/mdu/workflows/CI%20Testing/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/matthiasdold/mdu/branch/main/graph/badge.svg)](https://codecov.io/gh/matthiasdold/mdu)
 ![Tests](https://img.shields.io/badge/tests-176%20passed-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 
@@ -35,5 +35,5 @@ pytest tests/ --cov=src/mdu --cov-report=html
 
 Current test coverage: **27%** (176 tests passing)
 
-Coverage reports are automatically tracked on [Codecov](https://codecov.io/gh/matthiasdold/md_utils) via CI.
+Coverage reports are automatically tracked on [Codecov](https://codecov.io/gh/matthiasdold/mdu) via CI.
 
