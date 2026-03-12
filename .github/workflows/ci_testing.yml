@@ -38,12 +38,7 @@ jobs:
       
       - name: Install package with dev dependencies
         run: |
-          uv pip install --system ".[dev]"
-      
-      - name: Install optional dependencies for testing
-        run: |
-          uv pip install --system plotly-resampler scikit-learn
-        continue-on-error: true
+          uv pip install --system -e ".[all]"
       
       - name: Lint with Ruff
         run: |
