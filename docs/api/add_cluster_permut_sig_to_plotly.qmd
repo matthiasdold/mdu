@@ -1,0 +1,98 @@
+# add_cluster_permut_sig_to_plotly { #mdu.plotly.stats.add_cluster_permut_sig_to_plotly }
+
+```python
+plotly.stats.add_cluster_permut_sig_to_plotly(
+    curves_a: np.ndarray,
+    curves_b: np.ndarray,
+    fig: go.Figure,
+    xaxes_vals: None | list | np.ndarray = None,
+    row: None | int = None,
+    col: None | int = None,
+    pval: float = 0.05,
+    nperm: int = 1024,
+    mode: str = 'line',
+)
+```
+
+Add cluster-based permutation test significance indicators to time series plot.
+
+Performs cluster-based permutation testing on two sets of time series curves
+and adds visual indicators of significant time windows to a Plotly figure.
+This is particularly useful for identifying periods of significant difference
+in EEG/MEG data, behavioral timecourses, or any multi-trial time series.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type                        | Description                                                                                                                                                                                                                                                                        | Default    |
+|------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| curves_a   | np.ndarray                  | First set of curves with shape (n_trials, n_timepoints). Each row is one trial/observation.                                                                                                                                                                                        | _required_ |
+| curves_b   | np.ndarray                  | Second set of curves with shape (n_trials, n_timepoints). Must have same number of timepoints as curves_a.                                                                                                                                                                         | _required_ |
+| fig        | plotly.graph_objects.Figure | Plotly figure to add significance indicators to.                                                                                                                                                                                                                                   | _required_ |
+| xaxes_vals | list, np.ndarray, or None   | Time values for the x-axis. If None, uses indices 0, 1, 2, ...                                                                                                                                                                                                                     | `None`     |
+| row        | int or None                 | Subplot row index (1-based) to add indicators to. None for main plot.                                                                                                                                                                                                              | `None`     |
+| col        | int or None                 | Subplot column index (1-based) to add indicators to. None for main plot.                                                                                                                                                                                                           | `None`     |
+| pval       | float                       | Significance threshold for both F-statistic and cluster p-values. Clusters with p < pval are marked as significant.                                                                                                                                                                | `0.05`     |
+| nperm      | int                         | Number of permutations for the cluster test. Higher values give more stable results but take longer to compute.                                                                                                                                                                    | `1024`     |
+| mode       | str                         | Visualization style for significance indicators: - 'line': Black horizontal line at bottom with "p-val" label (simple) - 'spark': Sparklines showing F-statistic values - 'p_bg': Colored background for significant regions - 'p_colorbar': Vertical colorbar indicating p-values | `'line'`   |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type                        | Description                                                       |
+|--------|-----------------------------|-------------------------------------------------------------------|
+|        | plotly.graph_objects.Figure | Modified figure with cluster-based significance indicators added. |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import numpy as np
+>>> import plotly.graph_objects as go
+>>> # Simulate two groups of time series (e.g., EEG trials)
+>>> n_trials, n_time = 20, 100
+>>> time = np.linspace(0, 1, n_time)
+>>> # Group A: baseline activity
+>>> curves_a = np.random.randn(n_trials, n_time)
+>>> # Group B: enhanced activity in middle period (time 0.4-0.6)
+>>> curves_b = np.random.randn(n_trials, n_time)
+>>> curves_b[:, 40:60] += 1.5  # Add signal in middle
+>>> # Create figure with mean lines
+>>> fig = go.Figure()
+>>> fig.add_scatter(x=time, y=curves_a.mean(axis=0), name='Group A')
+>>> fig.add_scatter(x=time, y=curves_b.mean(axis=0), name='Group B')
+>>> # Add cluster permutation test
+>>> fig = add_cluster_permut_sig_to_plotly(
+...     curves_a, curves_b, fig,
+...     xaxes_vals=time,
+...     pval=0.05,
+...     nperm=1000,
+...     mode='line'
+... )
+```
+
+```python
+>>> # Use with subplots
+>>> from plotly.subplots import make_subplots
+>>> fig = make_subplots(rows=1, cols=2)
+>>> # Add data to subplot 1
+>>> fig.add_scatter(x=time, y=curves_a.mean(axis=0), row=1, col=1)
+>>> fig.add_scatter(x=time, y=curves_b.mean(axis=0), row=1, col=1)
+>>> # Add significance to subplot 1
+>>> fig = add_cluster_permut_sig_to_plotly(
+...     curves_a, curves_b, fig,
+...     xaxes_vals=time, row=1, col=1, mode='p_bg'
+... )
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+- Uses MNE-Python's cluster permutation test implementation
+- Tests are based on F-statistics with appropriate degrees of freedom
+- Cluster threshold is determined by F-distribution at specified pval
+- Only temporally adjacent significant points form clusters
+- Cluster p-values are corrected for multiple comparisons
+- If no significant clusters found, a log message is issued but no error raised
+- For EEG/MEG data, consider using MNE-Python's native plotting functions
+
+## References {.doc-section .doc-section-references}
+
+Maris, E., & Oostenveld, R. (2007). Nonparametric statistical testing of
+EEG-and MEG-data. Journal of neuroscience methods, 164(1), 177-190.

@@ -1,0 +1,90 @@
+# multiline_plot { #mdu.plotly.multiline.multiline_plot }
+
+```python
+plotly.multiline.multiline_plot(
+    dp: pl.DataFrame,
+    x: str,
+    y: str,
+    line_group: str,
+    mean: bool = False,
+    std: bool = False,
+    mean_ci: bool = False,
+    single_lines: bool = False,
+    fig: go.Figure | None = None,
+    add_significance: bool = False,
+    significance_line_kwargs: dict = {},
+    **kwargs,
+)
+```
+
+Create line plot with multiple groups and optional statistical overlays.
+
+Generates a Plotly line plot from grouped data with options to display
+individual lines per group, mean lines, standard deviation bands, and
+95% confidence intervals. Supports significance testing between groups.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name                     | Type                                | Description                                                                                                                         | Default    |
+|--------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|------------|
+| dp                       | polars.DataFrame                    | Input dataframe containing the data to plot.                                                                                        | _required_ |
+| x                        | str                                 | Column name for x-axis values.                                                                                                      | _required_ |
+| y                        | str                                 | Column name for y-axis values.                                                                                                      | _required_ |
+| line_group               | str                                 | Column name for grouping individual lines (e.g., subject ID, trial).                                                                | _required_ |
+| mean                     | bool                                | If True, plot the mean line for each group.                                                                                         | `False`    |
+| std                      | bool                                | If True, add shaded standard deviation bands around the mean.                                                                       | `False`    |
+| mean_ci                  | bool                                | If True, add shaded 95% confidence interval bands (SEM * 1.96).                                                                     | `False`    |
+| single_lines             | bool                                | If True, plot individual traces for each line_group with low opacity.                                                               | `False`    |
+| fig                      | plotly.graph_objects.Figure or None | Existing figure to add traces to. If None, creates new figure.                                                                      | `None`     |
+| add_significance         | bool                                | If True, add cluster-based permutation test significance indicators. Requires exactly two groups.                                   | `False`    |
+| significance_line_kwargs | dict                                | Additional keyword arguments passed to significance testing function. Can include 'pval' (default=0.05) for significance threshold. | `{}`       |
+| **kwargs                 |                                     | Additional keyword arguments passed to plotly.express.line(), such as 'color', 'color_discrete_map', etc.                           | `{}`       |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type                        | Description                                                               |
+|--------|-----------------------------|---------------------------------------------------------------------------|
+|        | plotly.graph_objects.Figure | Plotly figure with the multi-line plot and optional statistical overlays. |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type       | Description                                                              |
+|--------|------------|--------------------------------------------------------------------------|
+|        | ValueError | If add_significance=True but the data does not contain exactly 2 groups. |
+
+## Notes {.doc-section .doc-section-notes}
+
+The function may issue UserWarnings in the following cases:
+- If numeric columns are found in grouping columns (may cause aggregation issues).
+- If x-axis column is float type (will be rounded to 10 decimal places).
+- If some groups have null std/CI values (likely due to n=1 samples).
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import polars as pl
+>>> import plotly.express as px
+>>> # Create sample data
+>>> df = pl.DataFrame({
+...     'time': [0, 1, 2] * 4,
+...     'value': [1, 2, 3, 1.5, 2.5, 3.5, 0.8, 1.8, 2.8, 1.2, 2.2, 3.2],
+...     'subject': ['S1', 'S1', 'S1', 'S2', 'S2', 'S2',
+...                 'S3', 'S3', 'S3', 'S4', 'S4', 'S4'],
+...     'group': ['A', 'A', 'A', 'A', 'A', 'A',
+...               'B', 'B', 'B', 'B', 'B', 'B']
+... })
+>>> # Plot with mean and confidence intervals
+>>> fig = multiline_plot(
+...     df, x='time', y='value', line_group='subject',
+...     mean=True, mean_ci=True, color='group'
+... )
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+- The 95% CI is calculated as 1.96 * SEM where SEM = std / sqrt(n).
+- When plotting both std and mean_ci, std bands are shown with dotted lines.
+- Significance testing uses cluster-based permutation tests and requires
+  exactly two groups in the data.
+- Float x-axis values are rounded to 10 decimal places to ensure proper
+  grouping alignment.

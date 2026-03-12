@@ -1,0 +1,87 @@
+# ToFloatConverter { #mdu.utils.converters.ToFloatConverter }
+
+```python
+utils.converters.ToFloatConverter(back_conversion: Callable | None = None)
+```
+
+Conversion from numpy array of various data formats to float and back
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [from_timestamp_with_offset](#mdu.utils.converters.ToFloatConverter.from_timestamp_with_offset) | Convert timestamp back to datetime with offset. |
+| [to_float](#mdu.utils.converters.ToFloatConverter.to_float) | Convert numpy array to float, handling various data types. |
+| [to_orig](#mdu.utils.converters.ToFloatConverter.to_orig) | Convert back to original data type from float. |
+
+### from_timestamp_with_offset { #mdu.utils.converters.ToFloatConverter.from_timestamp_with_offset }
+
+```python
+utils.converters.ToFloatConverter.from_timestamp_with_offset(
+    ts: datetime.timestamp,
+    offset: float,
+)
+```
+
+Convert timestamp back to datetime with offset.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type   | Description                                                 | Default    |
+|--------|--------|-------------------------------------------------------------|------------|
+| ts     | float  | Timestamp value (seconds since epoch, with offset removed). | _required_ |
+| offset | float  | Offset timestamp to add back (seconds since epoch).         | _required_ |
+
+#### Returns {.doc-section .doc-section-returns}
+
+| Name   | Type     | Description                                              |
+|--------|----------|----------------------------------------------------------|
+|        | datetime | Datetime object reconstructed from timestamp and offset. |
+
+### to_float { #mdu.utils.converters.ToFloatConverter.to_float }
+
+```python
+utils.converters.ToFloatConverter.to_float(x: np.ndarray)
+```
+
+Convert numpy array to float, handling various data types.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                                           | Default    |
+|--------|------------|-----------------------------------------------------------------------|------------|
+| x      | np.ndarray | Input array with elements of the same type (datetime, float, or int). | _required_ |
+
+#### Returns {.doc-section .doc-section-returns}
+
+| Name   | Type       | Description                                                                                         |
+|--------|------------|-----------------------------------------------------------------------------------------------------|
+|        | np.ndarray | Array converted to float. For datetime objects, converts to timestamps offset from the first value. |
+
+#### Raises {.doc-section .doc-section-raises}
+
+| Name   | Type           | Description                          |
+|--------|----------------|--------------------------------------|
+|        | AssertionError | If input array contains mixed types. |
+
+### to_orig { #mdu.utils.converters.ToFloatConverter.to_orig }
+
+```python
+utils.converters.ToFloatConverter.to_orig(x: np.ndarray)
+```
+
+Convert back to original data type from float.
+
+Converts to the type of the last input of `self.to_float`.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                   | Default    |
+|--------|------------|-----------------------------------------------|------------|
+| x      | np.ndarray | Float array to convert back to original type. | _required_ |
+
+#### Returns {.doc-section .doc-section-returns}
+
+| Name   | Type       | Description                            |
+|--------|------------|----------------------------------------|
+|        | np.ndarray | Array converted to original data type. |

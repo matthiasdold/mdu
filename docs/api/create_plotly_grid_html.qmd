@@ -1,0 +1,56 @@
+# create_plotly_grid_html { #mdu.plotly.html_grids.create_plotly_grid_html }
+
+```python
+plotly.html_grids.create_plotly_grid_html(
+    figures: list[go.Figure],
+    grid_shape: tuple[int, int],
+    filename: Path = Path('plotly_grid.html'),
+    show: bool = False,
+    min_height: int = 200,
+)
+```
+
+Compose multiple Plotly figures into a single HTML file with grid layout.
+
+Creates a standalone HTML file containing multiple Plotly figures arranged
+in a CSS grid layout. The first figure includes the Plotly.js library via
+CDN, while subsequent figures reuse it for efficiency.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type                                | Description                                                                | Default                    |
+|------------|-------------------------------------|----------------------------------------------------------------------------|----------------------------|
+| figures    | list of plotly.graph_objects.Figure | List of Plotly figure objects to display in the grid.                      | _required_                 |
+| grid_shape | tuple of (int, int)                 | Grid dimensions as (rows, cols). The product must be >= len(figures).      | _required_                 |
+| filename   | Path                                | Output file path for the HTML file.                                        | `Path("plotly_grid.html")` |
+| show       | bool                                | If True, automatically opens the generated HTML file in a new browser tab. | `False`                    |
+| min_height | int                                 | Minimum height in pixels for each chart in the grid.                       | `200`                      |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type       | Description                                   |
+|--------|------------|-----------------------------------------------|
+|        | ValueError | If the number of figures exceeds rows * cols. |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import plotly.express as px
+>>> from pathlib import Path
+>>> # Create sample figures
+>>> fig1 = px.scatter(x=[1, 2, 3], y=[4, 5, 6])
+>>> fig2 = px.line(x=[1, 2, 3], y=[2, 4, 6])
+>>> fig3 = px.bar(x=['A', 'B', 'C'], y=[10, 15, 13])
+>>> # Create 2x2 grid
+>>> create_plotly_grid_html(
+...     figures=[fig1, fig2, fig3],
+...     grid_shape=(2, 2),
+...     filename=Path("my_grid.html"),
+...     show=True
+... )
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+The HTML file is self-contained except for the Plotly.js library which is
+loaded from CDN. For offline use, consider downloading Plotly.js locally.

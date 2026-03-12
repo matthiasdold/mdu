@@ -1,0 +1,79 @@
+# API Reference {.doc .doc-index}
+
+## HTML Grid Layouts
+
+⭐ Create multi-figure HTML dashboards with grid and tabbed layouts
+
+| | |
+| --- | --- |
+| [create_plotly_grid_html](create_plotly_grid_html.qmd#mdu.plotly.html_grids.create_plotly_grid_html) | Compose multiple Plotly figures into a single HTML file with grid layout. |
+| [create_tabbed_plotly_grid_html](create_tabbed_plotly_grid_html.qmd#mdu.plotly.html_grids.create_tabbed_plotly_grid_html) | Create multi-tab HTML dashboard with custom grid layout per tab. |
+
+## Multi-line Plotting
+
+⭐ Advanced line plots with statistical overlays and significance testing
+
+| | |
+| --- | --- |
+| [multiline_plot](multiline_plot.qmd#mdu.plotly.multiline.multiline_plot) | Create line plot with multiple groups and optional statistical overlays. |
+
+## Statistical Testing
+
+⭐ Add statistical significance indicators and model fits to plots
+
+| | |
+| --- | --- |
+| [add_cluster_permut_sig_to_plotly](add_cluster_permut_sig_to_plotly.qmd#mdu.plotly.stats.add_cluster_permut_sig_to_plotly) | Add cluster-based permutation test significance indicators to time series plot. |
+| [add_statsmodel_fit](add_statsmodel_fit.qmd#mdu.plotly.stats.add_statsmodel_fit) | Add statistical model fit with confidence intervals to Plotly figure. |
+| [add_box_significance_indicator](add_box_significance_indicator.qmd#mdu.plotly.stats.add_box_significance_indicator) | Add statistical significance indicators between box or violin plots. |
+
+## Plot Enhancements
+
+⭐ Add metadata and utility functions for enhanced plots
+
+| | |
+| --- | --- |
+| [add_meta_info](add_meta_info.qmd#mdu.plotly.shared.add_meta_info) | Adds a metadata info symbol 'ⓘ' to a Plotly figure. |
+| [hex_to_rgba](hex_to_rgba.qmd#mdu.plotly.shared.hex_to_rgba) | Convert hex color code to RGBA string format. |
+| [format_float_to_text_with_suffix](format_float_to_text_with_suffix.qmd#mdu.plotly.shared.format_float_to_text_with_suffix) | Format a float with metric suffix and up to 2 decimal places. |
+
+## Time Series Plotting
+
+Time series visualization with optional resampling
+
+| | |
+| --- | --- |
+| [plot_ts](plot_ts.qmd#mdu.plotly.time_series.plot_ts) | Plot one or multiple time series with optional resampling. |
+| [DataShapeError](DataShapeError.qmd#mdu.plotly.time_series.DataShapeError) | Exception raised when data has incompatible shape for plotting. |
+
+## Plotly Templates
+
+Custom styling templates
+
+| | |
+| --- | --- |
+| [set_template](set_template.qmd#mdu.plotly.template.set_template) | Set custom Plotly template with default styling for box and violin plots. |
+
+## ML Plotting
+
+Machine learning visualizations
+
+| | |
+| --- | --- |
+| [plot_roc_curve](plot_roc_curve.qmd#mdu.plotly.ml.plot_roc_curve) | Plot ROC (Receiver Operating Characteristic) curve with AUC. |
+
+## MNE Events
+
+MNE event mapping utilities
+
+| | |
+| --- | --- |
+| [inverse_map_events](inverse_map_events.qmd#mdu.mne.events.inverse_map_events) | Inverse map of events in evid -> use numbers in evid values if present |
+
+## Type Converters
+
+Type conversion utilities
+
+| | |
+| --- | --- |
+| [ToFloatConverter](ToFloatConverter.qmd#mdu.utils.converters.ToFloatConverter) | Conversion from numpy array of various data formats to float and back |

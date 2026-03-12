@@ -1,0 +1,60 @@
+# format_float_to_text_with_suffix { #mdu.plotly.shared.format_float_to_text_with_suffix }
+
+```python
+plotly.shared.format_float_to_text_with_suffix(num: float)
+```
+
+Format a float with metric suffix and up to 2 decimal places.
+
+Converts a numerical value to a compact string representation using
+metric prefixes (Mio, k, m, µ, n). The function automatically selects
+the appropriate scale and formats the result to a maximum of 2 decimal
+places, removing trailing zeros.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type   | Description                    | Default    |
+|--------|--------|--------------------------------|------------|
+| num    | float  | The numerical value to format. | _required_ |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type   | Description                          |
+|--------|--------|--------------------------------------|
+|        | str    | Formatted string with metric suffix. |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type      | Description                            |
+|--------|-----------|----------------------------------------|
+|        | TypeError | If num is not a number (int or float). |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> format_float_to_text_with_suffix(12_345_678)
+'12.35Mio'
+>>> format_float_to_text_with_suffix(10_000)
+'10k'
+>>> format_float_to_text_with_suffix(0.01234)
+'12.34m'
+>>> format_float_to_text_with_suffix(1e-6)
+'1µ'
+>>> format_float_to_text_with_suffix(1e-9)
+'1n'
+>>> format_float_to_text_with_suffix(-5000)
+'-5000'
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+Scale thresholds and suffixes:
+- >= 1e7: divided by 1e6, suffix 'Mio'
+- >= 1e4: divided by 1e3, suffix 'k'
+- >= 1: no scaling, no suffix
+- >= 1e-4: divided by 1e-3, suffix 'm'
+- >= 1e-7: divided by 1e-6, suffix 'µ'
+- < 1e-7: divided by 1e-9, suffix 'n'
+
+Special values (inf, -inf, nan, 0) are handled as string conversions
+without scaling.

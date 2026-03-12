@@ -1,0 +1,78 @@
+# add_box_significance_indicator { #mdu.plotly.stats.add_box_significance_indicator }
+
+```python
+plotly.stats.add_box_significance_indicator(
+    fig: go.Figure,
+    same_legendgroup_only: bool = False,
+    xval_pairs: list[tuple] | None = None,
+    color_pairs: list[tuple] | None = None,
+    stat_func: Callable = stats.ttest_ind,
+    p_quantiles: tuple = (0.05, 0.01),
+    rel_y_offset: float = 0.05,
+    only_significant: bool = True,
+)
+```
+
+Add statistical significance indicators between box or violin plots.
+
+Automatically calculates pairwise statistical tests between groups in a
+box/violin plot and adds significance indicators (*, **, ***, ns) with
+connecting lines above the plot.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name                  | Type                        | Description                                                                                                                              | Default                 |
+|-----------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------|-------------------------|
+| fig                   | plotly.graph_objects.Figure | Plotly figure containing box or violin plot traces.                                                                                      | _required_              |
+| same_legendgroup_only | bool                        | If True, only calculate significance between groups with the same legend group (typically same color). If False, tests all combinations. | `False`                 |
+| xval_pairs            | list of tuple or None       | Specific x-axis value pairs to test. If None, tests all combinations. Example: [(0, 1), (1, 2)] tests only these pairs.                  | `None`                  |
+| color_pairs           | list of tuple or None       | Specific color/legend group pairs to test. Only used when same_legendgroup_only=False. If None, tests all combinations.                  | `None`                  |
+| stat_func             | Callable                    | Statistical test function to use. Must return a test statistic and p-value. Common options: stats.ttest_ind, stats.mannwhitneyu.         | `scipy.stats.ttest_ind` |
+| p_quantiles           | tuple                       | P-value thresholds for significance levels. Default maps to: p < 0.01: '**', p < 0.05: '*', p >= 0.05: 'ns'                              | `(0.05, 0.01)`          |
+| rel_y_offset          | float                       | Relative vertical offset (as fraction of y-range) for significance indicators above the maximum data point.                              | `0.05`                  |
+| only_significant      | bool                        | If True, only show significant indicators. If False, show all comparisons including 'ns' (not significant).                              | `True`                  |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type                        | Description                                                                   |
+|--------|-----------------------------|-------------------------------------------------------------------------------|
+|        | plotly.graph_objects.Figure | Modified figure with significance indicators added as shapes and annotations. |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import plotly.express as px
+>>> import pandas as pd
+>>> from scipy import stats
+>>> # Create sample data
+>>> df = pd.DataFrame({
+...     'group': ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C'],
+...     'value': [1, 2, 3, 4, 5, 6, 2, 3, 4],
+...     'category': ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']
+... })
+>>> # Create box plot
+>>> fig = px.box(df, x='group', y='value', color='category')
+>>> # Add significance indicators between all groups
+>>> fig = add_box_significance_indicator(
+...     fig,
+...     stat_func=stats.ttest_ind,
+...     only_significant=True
+... )
+```
+
+```python
+>>> # Test only specific pairs
+>>> fig = add_box_significance_indicator(
+...     fig,
+...     xval_pairs=[('A', 'B'), ('B', 'C')],
+...     same_legendgroup_only=True
+... )
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+- Significance levels are indicated by asterisks: * (p<0.05), ** (p<0.01)
+- The function automatically converts categorical x-axes to numeric for positioning
+- Works with both single-color and multi-color (grouped) box/violin plots
+- For paired data, use appropriate stat_func like stats.wilcoxon
+- The function modifies the figure's x-axis to numeric if it's categorical

@@ -1,0 +1,39 @@
+website:
+  sidebar:
+  - contents:
+    - docs/api/index.qmd
+    - contents:
+      - docs/api/create_plotly_grid_html.qmd
+      - docs/api/create_tabbed_plotly_grid_html.qmd
+      section: HTML Grid Layouts
+    - contents:
+      - docs/api/multiline_plot.qmd
+      section: Multi-line Plotting
+    - contents:
+      - docs/api/add_cluster_permut_sig_to_plotly.qmd
+      - docs/api/add_statsmodel_fit.qmd
+      - docs/api/add_box_significance_indicator.qmd
+      section: Statistical Testing
+    - contents:
+      - docs/api/add_meta_info.qmd
+      - docs/api/hex_to_rgba.qmd
+      - docs/api/format_float_to_text_with_suffix.qmd
+      section: Plot Enhancements
+    - contents:
+      - docs/api/plot_ts.qmd
+      - docs/api/DataShapeError.qmd
+      section: Time Series Plotting
+    - contents:
+      - docs/api/set_template.qmd
+      section: Plotly Templates
+    - contents:
+      - docs/api/plot_roc_curve.qmd
+      section: ML Plotting
+    - contents:
+      - docs/api/inverse_map_events.qmd
+      section: MNE Events
+    - contents:
+      - docs/api/ToFloatConverter.qmd
+      section: Type Converters
+    id: docs/api
+  - id: dummy-sidebar

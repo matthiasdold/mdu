@@ -1,0 +1,109 @@
+---
+title: "Installation"
+---
+
+## Requirements
+
+- Python 3.10 or higher
+- pip or uv package manager
+
+## Basic Installation
+
+Install from PyPI (when published):
+
+```bash
+pip install mdu
+```
+
+Or using uv (faster):
+
+```bash
+uv pip install mdu
+```
+
+## Development Installation
+
+Clone the repository and install in editable mode:
+
+```bash
+git clone https://github.com/matthiasdold/md_utils.git
+cd md_utils
+pip install -e ".[dev]"
+```
+
+## Optional Dependencies
+
+MD Utils has several optional dependency groups:
+
+### Resampler (Large Time Series)
+```bash
+pip install mdu[resampler]
+```
+
+Enables `plotly-resampler` for efficient plotting of large datasets (>100k points).
+
+### Machine Learning
+```bash
+pip install mdu[ml]
+```
+
+Adds `scikit-learn` for ML visualization utilities.
+
+### Dashboard Support
+```bash
+pip install mdu[dash]
+```
+
+Includes `dash` and `PyYAML` for interactive dashboards.
+
+### Time-Frequency Analysis
+```bash
+pip install mdu[tfr]
+```
+
+Adds `Pillow` and `fire` for TFR plotting from command line.
+
+### All Features
+```bash
+pip install mdu[all]
+```
+
+Installs all optional dependencies.
+
+## Verify Installation
+
+```python
+import mdu
+print(mdu.__version__)
+
+# Check optional features
+from mdu.plotly import time_series, shared, template
+from mdu.utils import converters, logging
+```
+
+## Troubleshooting
+
+### Import Errors
+
+If you get import errors, ensure the package is installed:
+
+```bash
+pip list | grep mdu
+```
+
+### Missing Optional Dependencies
+
+Some features require optional dependencies. Install the appropriate extra:
+
+```bash
+pip install mdu[resampler,ml]
+```
+
+### Development Dependencies
+
+For testing and development:
+
+```bash
+pip install mdu[dev]
+pytest tests/
+```

@@ -1,0 +1,74 @@
+# plot_ts { #mdu.plotly.time_series.plot_ts }
+
+```python
+plotly.time_series.plot_ts(
+    data: np.ndarray,
+    x: np.ndarray | None = None,
+    names: list[str] | None = None,
+    show: bool = False,
+    use_resampler: bool = True,
+)
+```
+
+Plot one or multiple time series with optional resampling.
+
+Creates a multi-row subplot figure with one trace per row. Optionally uses
+plotly-resampler for efficient rendering of large time series data.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name          | Type                | Description                                                                                                                                                             | Default    |
+|---------------|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| data          | np.ndarray          | Data array with shape (n_samples,) for single time series or (n_samples, n_features) for multiple time series.                                                          | _required_ |
+| x             | np.ndarray or None  | Array of x-axis values with shape (n_samples,). If None, uses np.arange(data.shape[0]).                                                                                 | `None`     |
+| names         | list of str or None | Labels for each time series trace. If None, generates default names like 'y0', 'y1', etc.                                                                               | `None`     |
+| show          | bool                | If True, display the figure immediately.                                                                                                                                | `False`    |
+| use_resampler | bool                | If True and plotly-resampler is installed, use FigureResampler for efficient large dataset rendering. If False or resampler not available, uses standard plotly Figure. | `True`     |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type                        | Description                                                                                     |
+|--------|-----------------------------|-------------------------------------------------------------------------------------------------|
+|        | plotly.graph_objects.Figure | Figure object (FigureResampler if available and use_resampler=True, otherwise standard Figure). |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type           | Description                         |
+|--------|----------------|-------------------------------------|
+|        | DataShapeError | If data has more than 2 dimensions. |
+
+## Notes {.doc-section .doc-section-notes}
+
+If use_resampler=True but plotly-resampler is not installed, a UserWarning
+will be issued and standard plotly Figure will be used instead.
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import numpy as np
+>>> # Single time series
+>>> data = np.random.randn(1000)
+>>> fig = plot_ts(data)
+```
+
+```python
+>>> # Multiple time series with custom x-axis
+>>> data = np.random.randn(1000, 3)
+>>> x = np.linspace(0, 10, 1000)
+>>> fig = plot_ts(data, x=x, names=['Signal A', 'Signal B', 'Signal C'])
+```
+
+```python
+>>> # Large dataset with resampling
+>>> large_data = np.random.randn(1_000_000, 2)
+>>> fig = plot_ts(large_data, use_resampler=True)
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+When plotly-resampler is installed and use_resampler=True, the function
+creates a FigureResampler which dynamically downsamples data during
+pan/zoom operations for improved performance with large datasets.
+
+Without plotly-resampler, all data points are rendered which may cause
+performance issues with datasets larger than ~100k points.

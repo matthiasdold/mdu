@@ -1,0 +1,42 @@
+# hex_to_rgba { #mdu.plotly.shared.hex_to_rgba }
+
+```python
+plotly.shared.hex_to_rgba(hex_color: str, opacity: float | None = None)
+```
+
+Convert hex color code to RGBA string format.
+
+Converts a hexadecimal color string (with or without '#' prefix) to an
+RGBA formatted string. Supports both shorthand (#ddd) and full (#888888)
+hex notation.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name      | Type          | Description                                                                                                    | Default    |
+|-----------|---------------|----------------------------------------------------------------------------------------------------------------|------------|
+| hex_color | str           | Hexadecimal color string. Accepts formats: '#rrggbb', 'rrggbb', '#rgb', or 'rgb' where r, g, b are hex digits. | _required_ |
+| opacity   | float or None | Opacity value between 0.0 (transparent) and 1.0 (opaque). If None, defaults to 1.0.                            | `None`     |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type   | Description                                                                                                 |
+|--------|--------|-------------------------------------------------------------------------------------------------------------|
+|        | str    | RGBA formatted string in the form 'rgba(r, g, b, a)' where r, g, b are integers 0-255 and a is the opacity. |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> hex_to_rgba('#ff0000', opacity=1.0)
+'rgba(255, 0, 0, 1.0)'
+>>> hex_to_rgba('#ddd', opacity=0.7)
+'rgba(221, 221, 221, 0.7)'
+>>> hex_to_rgba('888888', opacity=0.5)
+'rgba(136, 136, 136, 0.5)'
+>>> hex_to_rgba('#00ff00')
+'rgba(0, 255, 0, 1.0)'
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+Shorthand hex notation (e.g., '#ddd') is automatically expanded to full
+notation ('#dddddd') before conversion.

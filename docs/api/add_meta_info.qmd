@@ -1,0 +1,64 @@
+# add_meta_info { #mdu.plotly.shared.add_meta_info }
+
+```python
+plotly.shared.add_meta_info(fig: go.Figure, text: str | list[str])
+```
+
+Adds a metadata info symbol 'ⓘ' to a Plotly figure.
+
+This function adds a 'ⓘ' annotation with hover text to the top-left
+corner of a plot's drawing area. It is subplot-aware and will place an
+icon in each subplot if the figure contains facets. The default styling
+includes a white background and dark grey font color for the icon.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type               | Description                                                                                                                                                                                                                                                                                                | Default    |
+|--------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| fig    | go.Figure          | The Plotly figure object to be modified.                                                                                                                                                                                                                                                                   | _required_ |
+| text   | str or list\[str\] | The hover text for the info icon. If `fig` is a single plot, this should be a single string. If `fig` has subplots (facets), this must be a list of strings, where the length of the list matches the number of subplots. The texts are applied to subplots by iterating through columns first, then rows. | _required_ |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type      | Description                                                     |
+|--------|-----------|-----------------------------------------------------------------|
+|        | go.Figure | The modified Plotly figure object with the added annotation(s). |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type       | Description                                                                                                |
+|--------|------------|------------------------------------------------------------------------------------------------------------|
+|        | ValueError | If the figure contains subplots and the number of strings in `text` does not match the number of subplots. |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import plotly.express as px
+```
+
+# --- Example 1: Single plot ---
+
+```python
+>>> fig_single = px.scatter(x=[0, 1], y=[0, 1])
+>>> info_text_single = "This is a simple scatter plot."
+>>> fig_single = add_meta_info(fig_single, info_text_single)
+>>> # fig_single.show()
+```
+
+# --- Example 2: Faceted plot (subplots) ---
+
+```python
+>>> df = px.data.tips()
+>>> fig_facet = px.scatter(df, x="total_bill", y="tip",
+...                        facet_col="sex", facet_row="smoker")
+>>> # Text order is col-first: (Male, Smoker), (Female, Smoker), (Male, Non-Smoker),
+... # (Female, Non-Smoker)
+>>> info_texts_facet = [
+...     "Data for male smokers.",
+...     "Data for female smokers.",
+...     "Data for male non-smokers.",
+...     "Data for female non-smokers."
+... ]
+>>> fig_facet = add_meta_info(fig_facet, info_texts_facet)
+>>> # fig_facet.show()
+```

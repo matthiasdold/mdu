@@ -1,0 +1,80 @@
+---
+title: "Examples"
+---
+
+## Overview
+
+Practical examples demonstrating MD Utils' most powerful features for interactive visualization and statistical analysis.
+
+## ⭐ Featured Examples
+
+### [HTML Grid Dashboards](html_grids.qmd)
+Create multi-figure HTML dashboards with grid and tabbed layouts. Perfect for comprehensive analysis reports and sharing interactive visualizations.
+
+**Key functions**: `create_plotly_grid_html`, `create_tabbed_plotly_grid_html`
+
+### [Advanced Statistical Testing](advanced_statistics.qmd)
+Add statistical significance indicators and model fits to plots:
+- Cluster-based permutation tests for time series
+- Automatic box plot significance indicators
+- Regression fits with confidence intervals
+
+**Key functions**: `add_cluster_permut_sig_to_plotly`, `add_box_significance_indicator`, `add_statsmodel_fit`
+
+### [Multi-line Plots & Metadata](multiline_enhanced.qmd)
+Create publication-ready multi-line plots with:
+- Individual traces + mean ± CI/SD
+- Automatic significance testing
+- Metadata annotations for reproducibility
+
+**Key functions**: `multiline_plot`, `add_meta_info`
+
+### [MNE Topoplots](mne_topoplot.qmd)
+Interactive EEG/MEG topographic maps from MNE-Python data:
+- Spatial distribution visualization with smooth interpolation
+- Automatic channel positioning from MNE info
+- Customizable colorscales and styling
+- Integration with evoked responses and spectrum data
+
+**Key functions**: `create_plotly_topoplot`
+
+## Additional Examples
+
+### [Time Series Plotting](time_series.qmd)
+Learn how to create interactive time series visualizations with support for large datasets.
+
+### [Statistical Analysis](statistical.qmd)
+Examples of statistical plotting and significance testing.
+
+## Example from Repository
+
+The `examples/` folder contains runnable Python scripts:
+
+- `resampler_example.py` - Demonstrates plotly-resampler integration
+
+## Running Examples
+
+Clone the repository and run examples:
+
+```bash
+git clone https://github.com/matthiasdold/md_utils.git
+cd md_utils
+pip install -e ".[all]"
+python examples/resampler_example.py
+```
+
+## Jupyter Notebooks
+
+You can also run examples in Jupyter:
+
+```bash
+pip install jupyter
+jupyter notebook
+```
+
+Then create a new notebook and import:
+
+```python
+import mdu
+from mdu.plotly import html_grids, stats, multiline, shared
+```

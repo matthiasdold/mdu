@@ -1,0 +1,124 @@
+---
+title: "Statistical Analysis Examples"
+subtitle: "Statistical testing and model fitting on plots"
+execute:
+  eval: true
+---
+
+## Box Plot with Significance Indicators
+
+Add significance indicators to box plots:
+
+```{python}
+import plotly.express as px
+from mdu.plotly.stats import add_box_significance_indicator
+from mdu.plotly.template import set_template
+
+# Set custom template
+set_template()
+
+# Create box plot
+df = px.data.tips()
+fig = px.box(df, x='day', y='total_bill', title='Bill Amount by Day')
+
+# show all, also the not significant 'ns'
+fig = add_box_significance_indicator(fig, only_significant=False)
+
+fig.show()
+```
+
+## Statistical Model Fitting
+
+Add regression lines and model summaries to scatter plots:
+
+```{python}
+import plotly.express as px
+from mdu.plotly.stats import add_statsmodel_fit
+
+from mdu.plotly.template import set_template
+
+set_template()
+
+# Create scatter plot
+df = px.data.tips()
+fig = px.scatter(df, x='total_bill', y='tip', 
+                 title='Tip vs Bill with Statistical Fit',
+                 opacity=0.6)
+
+# Add OLS regression line with confidence interval
+fig = add_statsmodel_fit(
+    fig,
+    x=df["total_bill"].to_numpy(),
+    y=df["tip"].to_numpy(),
+)
+
+fig.show()
+```
+
+## ROC Curve Example
+
+```{python}
+from mdu.plotly.ml import plot_roc_curve
+import numpy as np
+
+# Simulate model predictions
+np.random.seed(42)
+y_true = np.random.randint(0, 2, 100)
+y_pred = np.random.rand(100)
+
+# Add some signal
+y_pred[y_true == 1] += 0.3
+y_pred = np.clip(y_pred, 0, 1)
+
+# Plot ROC curve with AUC
+fig = plot_roc_curve(y_true, y_pred)
+fig.update_layout(title="ROC Curve Example")
+fig.show()
+```
+
+## Perfect vs Random Classifier
+
+```{python}
+# Perfect classifier
+y_true_perfect = np.array([0, 0, 0, 1, 1, 1])
+y_pred_perfect = np.array([0.1, 0.2, 0.3, 0.7, 0.8, 0.9])
+
+fig_perfect = plot_roc_curve(y_true_perfect, y_pred_perfect)
+fig_perfect.update_layout(title="Perfect Classifier (AUC=1.0)")
+fig_perfect.show()
+
+# Random classifier
+y_pred_random = np.random.rand(100)
+y_true_random = np.random.randint(0, 2, 100)
+
+fig_random = plot_roc_curve(y_true_random, y_pred_random)
+fig_random.update_layout(title="Random Classifier (AUC≈0.5)")
+fig_random.show()
+```
+
+## Color Utilities
+
+```{python}
+from mdu.plotly.shared import hex_to_rgba
+
+# Convert colors with various opacities
+colors = ['#ff0000', '#00ff00', '#0000ff']
+opacities = [0.3, 0.6, 0.9]
+
+for color, opacity in zip(colors, opacities):
+    rgba = hex_to_rgba(color, opacity)
+    print(f"{color} at {opacity} opacity: {rgba}")
+```
+
+## Number Formatting
+
+```{python}
+from mdu.plotly.shared import format_float_to_text_with_suffix
+
+# Format various numbers
+numbers = [1, 100, 1_000, 10_000, 1_000_000, 0.001, 0.000001]
+
+for num in numbers:
+    formatted = format_float_to_text_with_suffix(num)
+    print(f"{num:>12} -> {formatted}")
+```

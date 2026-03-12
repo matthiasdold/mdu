@@ -1,0 +1,165 @@
+---
+title: "MD Utils Documentation"
+subtitle: "Advanced Visualization & Statistical Analysis Tools for Electrophysiology and Beyond"
+---
+
+## Overview
+
+MD Utils is a Python toolkit for creating publication-ready interactive visualizations and performing statistical analysis on plotly plots. It also contains utilities for MNE-Python users for electrophysiology plotting functions. 
+
+## ⭐ Key Features
+
+::: {.grid}
+
+::: {.g-col-6}
+### 📊 HTML Grid Dashboards
+Create multi-figure interactive dashboards with grid and tabbed layouts with a very simple interface, just having a list of figures and a specified grid - perfect for comprehensive reports and sharing results.
+
+[See Examples →](examples/html_grids.qmd)
+:::
+
+::: {.g-col-6}
+### 🔬 Statistical Testing
+Add cluster permutation tests, box plot significance indicators, and regression fits with confidence intervals to your plots.
+
+[See Examples →](examples/advanced_statistics.qmd)
+:::
+
+::: {.g-col-6}
+### 📈 Multi-line Plots
+Publication-ready time series plots with individual traces, mean ± CI/SD, and automatic significance testing.
+
+[See Examples →](examples/multiline_enhanced.qmd)
+:::
+
+::: {.g-col-6}
+### 🎨 Plotly Integration
+Beautiful interactive plots with custom templates, metadata annotations, and support for massive datasets via plotly-resampler.
+
+[See API →](api/index.qmd)
+:::
+
+::: {.g-col-6}
+### 🧠 MNE Topoplots
+Interactive EEG/MEG topographic maps with smooth interpolation and automatic channel positioning from MNE-Python data.
+
+[See Examples →](examples/mne_topoplot.qmd)
+:::
+
+:::
+
+## Quick Start
+
+```bash
+# Install with all features
+pip install md-utils[all]
+```
+
+### Example: Combining multiple plots to a single dashboard
+
+```{python}
+#| eval: false
+import plotly.express as px
+from pathlib import Path
+from mdu.plotly.html_grids import create_plotly_grid_html
+
+# Create sample figures
+df = px.data.iris()
+fig1 = px.scatter(df, x="sepal_width", y="sepal_length", color="species",
+                  title="Sepal Dimensions")
+fig2 = px.scatter(df, x="petal_width", y="petal_length", color="species",
+                  title="Petal Dimensions")
+fig3 = px.box(df, x="species", y="sepal_length", title="Sepal Length Distribution")
+fig4 = px.violin(df, x="species", y="petal_length", title="Petal Length Distribution")
+
+# Create 2x2 grid
+create_plotly_grid_html(
+    figures=[fig1, fig2, fig3, fig4],
+    grid_shape=(2, 2),
+    filename=Path("iris_dashboard.html"),
+    show=True,
+    min_height=300
+)
+```
+
+### Live Example
+
+Here's the interactive dashboard created by the code above:
+
+```{=html}
+<iframe src="/docs/examples/_assets/iris_dashboard.html" width="100%" height="650px" style="border:1px solid #ddd; border-radius: 4px;"></iframe>
+```
+
+## Quick Links
+
+::: {.grid}
+
+::: {.g-col-4}
+### [Installation](guide/installation.qmd)
+Get started with MD Utils
+:::
+
+::: {.g-col-4}
+### [API Reference](api/index.qmd)
+Detailed function documentation
+:::
+
+::: {.g-col-4}
+### [Examples](examples/index.qmd)
+Practical usage examples
+:::
+
+:::
+
+## Core Capabilities
+
+### 🎯 Most Popular Functions
+
+- **`create_tabbed_plotly_grid_html`** - Multi-tab dashboards with custom grids
+- **`add_cluster_permut_sig_to_plotly`** - Time series significance testing
+- **`add_box_significance_indicator`** - Automatic pairwise comparisons
+- **`multiline_plot`** - Multi-line plots with stats overlays
+- **`add_statsmodel_fit`** - Regression with confidence intervals
+- **`add_meta_info`** - Metadata annotations for reproducibility
+
+### 📦 Additional Features
+
+- **MNE Integration**: Event mapping and electrophysiology plotting
+- **Time Series**: Large dataset support via plotly-resampler
+- **ML Plotting**: ROC curves and model evaluation
+- **Type Converters**: Flexible data type handling
+
+## Installation Options
+
+```bash
+# Basic installation
+pip install md-utils
+
+# With development tools
+pip install md-utils[dev]
+
+# With specific features
+pip install md-utils[resampler]  # Large time-series plotting
+pip install md-utils[ml]          # ML utilities
+pip install md-utils[mne]         # MNE-Python integration
+pip install md-utils[all]         # All features
+```
+
+## Status
+
+![CI](https://github.com/matthiasdold/md_utils/workflows/CI%20Testing/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/matthiasdold/md_utils/branch/main/graph/badge.svg)](https://codecov.io/gh/matthiasdold/md_utils)
+![Python](https://img.shields.io/badge/python-3.10+-blue)
+
+- **Test Coverage**: 27%
+- **Tests**: 176 passing
+- **Python**: 3.10+
+- **License**: MIT
+
+## Contributing
+
+Contributions are welcome! See the [Contributing Guide](guide/contributing.qmd) for details.
+
+## License
+
+MIT License - see LICENSE file for details.

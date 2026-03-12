@@ -1,0 +1,228 @@
+---
+title: "Contributing"
+---
+
+## Welcome Contributors!
+
+We welcome contributions to MD Utils! This guide will help you get started.
+
+## Development Setup
+
+### 1. Fork and Clone
+
+```bash
+# Fork on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/md_utils.git
+cd md_utils
+```
+
+### 2. Create Virtual Environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+### 3. Install Development Dependencies
+
+```bash
+pip install -e ".[dev]"
+# Or with all optional features
+pip install -e ".[dev,all]"
+```
+
+## Making Changes
+
+### 1. Create a Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### 2. Make Your Changes
+
+- Add new features or fix bugs
+- Write tests for your changes
+- Update documentation
+
+### 3. Run Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=src/mdu --cov-report=html
+
+# Run specific test file
+pytest tests/test_your_module.py -v
+```
+
+### 4. Lint Your Code
+
+```bash
+pip install ruff
+ruff check src/
+ruff check --fix src/  # Auto-fix issues
+```
+
+## Writing Tests
+
+### Test Structure
+
+Tests should be in `tests/` directory matching the module structure:
+
+```
+tests/
+├── test_plotly_shared.py
+├── test_time_series.py
+└── test_converters.py
+```
+
+### Test Example
+
+```python
+import pytest
+from mdu.utils.converters import ToFloatConverter
+
+class TestToFloatConverter:
+    """Test suite for ToFloatConverter."""
+    
+    def test_basic_functionality(self):
+        """Test basic float conversion."""
+        converter = ToFloatConverter()
+        # ... test code
+```
+
+### Running Specific Tests
+
+```bash
+# Run one test class
+pytest tests/test_converters.py::TestToFloatConverter -v
+
+# Run one test method
+pytest tests/test_converters.py::TestToFloatConverter::test_basic_functionality -v
+
+# Run tests matching pattern
+pytest tests/ -k "converter" -v
+```
+
+## Documentation
+
+### Docstring Style
+
+Use NumPy-style docstrings:
+
+```python
+def my_function(param1: int, param2: str = "default") -> bool:
+    """Short description of function.
+    
+    Longer description if needed, explaining what the function
+    does in more detail.
+    
+    Parameters
+    ----------
+    param1 : int
+        Description of param1.
+    param2 : str, default="default"
+        Description of param2.
+    
+    Returns
+    -------
+    bool
+        Description of return value.
+    
+    Examples
+    --------
+    >>> my_function(42, "test")
+    True
+    """
+    pass
+```
+
+### Update Documentation
+
+If you add new features:
+
+1. Update relevant `.qmd` files in `docs/`
+2. Add examples to `docs/examples/`
+3. Update API reference in `docs/api/`
+
+## Pull Request Process
+
+### 1. Commit Your Changes
+
+```bash
+git add .
+git commit -m "feat: Add awesome new feature"
+```
+
+Use conventional commits:
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `test:` Test additions/changes
+- `refactor:` Code refactoring
+
+### 2. Push to Your Fork
+
+```bash
+git push origin feature/your-feature-name
+```
+
+### 3. Create Pull Request
+
+1. Go to the original repository on GitHub
+2. Click "New Pull Request"
+3. Select your branch
+4. Fill in the PR template
+5. Submit!
+
+### PR Checklist
+
+- [ ] Tests pass locally
+- [ ] Code is linted
+- [ ] Documentation updated
+- [ ] CHANGELOG updated (if applicable)
+- [ ] Tests added for new features
+- [ ] Coverage maintained or improved
+
+## Code Style
+
+- Follow PEP 8
+- Use type hints where possible
+- Keep functions focused and small
+- Write descriptive variable names
+- Add comments for complex logic
+
+## Testing Guidelines
+
+- Test edge cases
+- Test error conditions
+- Test with different data types
+- Aim for >80% coverage on new code
+- Use parametrize for similar tests
+
+```python
+@pytest.mark.parametrize("input,expected", [
+    (1.0, "1"),
+    (1000.0, "1000"),
+    (10_000.0, "10k"),
+])
+def test_formatting(input, expected):
+    assert format_float(input) == expected
+```
+
+## Getting Help
+
+- Open an issue for bugs or feature requests
+- Ask questions in discussions
+- Check existing issues and PRs
+
+## Code of Conduct
+
+Be respectful and inclusive. We're all here to learn and improve!
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.

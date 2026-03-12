@@ -1,0 +1,7 @@
+# DataShapeError { #mdu.plotly.time_series.DataShapeError }
+
+```python
+plotly.time_series.DataShapeError()
+```
+
+Exception raised when data has incompatible shape for plotting.

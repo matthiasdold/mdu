@@ -1,0 +1,193 @@
+---
+title: "HTML Grid Dashboards"
+subtitle: "Create multi-figure dashboards with grid and tabbed layouts"
+---
+
+## Overview
+
+The `html_grids` module provides powerful tools for creating interactive HTML dashboards from multiple Plotly figures. This is particularly useful for:
+
+- Creating comprehensive analysis reports with multiple visualizations
+- Building interactive dashboards without web frameworks
+- Sharing results with collaborators who don't use Python
+- Organizing complex multi-panel visualizations
+
+## Basic Grid Layout
+
+Create a simple grid of figures using `create_plotly_grid_html()`:
+
+```{python}
+#| eval: false
+import plotly.express as px
+from pathlib import Path
+from mdu.plotly.html_grids import create_plotly_grid_html
+
+# Create sample figures
+df = px.data.iris()
+fig1 = px.scatter(df, x="sepal_width", y="sepal_length", color="species",
+                  title="Sepal Dimensions")
+fig2 = px.scatter(df, x="petal_width", y="petal_length", color="species",
+                  title="Petal Dimensions")
+fig3 = px.box(df, x="species", y="sepal_length", title="Sepal Length Distribution")
+fig4 = px.violin(df, x="species", y="petal_length", title="Petal Length Distribution")
+
+# Create 2x2 grid
+create_plotly_grid_html(
+    figures=[fig1, fig2, fig3, fig4],
+    grid_shape=(2, 2),
+    filename=Path("iris_dashboard.html"),
+    show=True,
+    min_height=300
+)
+```
+
+### Live Example
+
+Here's the interactive dashboard created by the code above:
+
+```{=html}
+<iframe src="_assets/iris_dashboard.html" width="100%" height="650px" style="border:1px solid #ddd; border-radius: 4px;"></iframe>
+```
+
+### Grid Parameters
+
+- **`grid_shape`**: Tuple of (rows, cols) - must accommodate all figures
+- **`min_height`**: Minimum height in pixels for each chart
+- **`show`**: Auto-open in browser when True
+- **`filename`**: Output path for the HTML file
+
+## Tabbed Dashboards
+
+For more complex layouts, use `create_tabbed_plotly_grid_html()` to create multiple tabs, each with its own grid:
+
+```python
+from mdu.plotly.html_grids import create_tabbed_plotly_grid_html
+import plotly.express as px
+
+# Load data
+df = px.data.tips()
+
+# Tab 1: Overview with 2x2 grid
+overview_figs = [
+    px.scatter(df, x="total_bill", y="tip", color="time", title="Bill vs Tip"),
+    px.box(df, x="day", y="total_bill", title="Bills by Day"),
+    px.histogram(df, x="total_bill", title="Bill Distribution"),
+    px.pie(df, names="day", title="Visits by Day")
+]
+
+# Tab 2: Analysis with 1x3 grid
+analysis_figs = [
+    px.scatter(df, x="total_bill", y="tip", color="smoker", 
+               trendline="ols", title="Tip vs Bill by Smoker Status"),
+    px.box(df, x="time", y="tip", color="smoker", title="Tips by Time and Smoker"),
+    px.violin(df, x="day", y="total_bill", color="time", title="Bills by Day and Time")
+]
+
+# Tab 3: Details with 2x1 grid
+detail_figs = [
+    px.scatter(df, x="size", y="tip", color="sex", title="Tips by Party Size"),
+    px.bar(df.groupby(['day', 'time']).size().reset_index(name='count'),
+           x='day', y='count', color='time', title="Visit Counts")
+]
+
+# Create tabbed dashboard
+tabs_data = [
+    {
+        'title': 'Overview',
+        'figs': overview_figs,
+        'grid_dims': (2, 2)
+    },
+    {
+        'title': 'Statistical Analysis',
+        'figs': analysis_figs,
+        'grid_dims': (1, 3)
+    },
+    {
+        'title': 'Details',
+        'figs': detail_figs,
+        'grid_dims': (2, 1)
+    }
+]
+
+create_tabbed_plotly_grid_html(
+    tabs_data=tabs_data,
+    filename=Path("tips_dashboard.html"),
+    show=True,
+    min_height=400
+)
+```
+
+### Live Example
+
+Here's the interactive dashboard created by the code above:
+
+```{=html}
+<iframe src="_assets/tips_dashboard.html" width="100%" height="650px" style="border:1px solid #ddd; border-radius: 4px;"></iframe>
+```
+
+
+## Advanced: Mixed Grid Sizes
+
+Each tab can have its own grid dimensions:
+
+```python
+# Tab with many small plots (4x3 grid)
+small_plots = [px.scatter(...) for _ in range(12)]
+
+# Tab with few large plots (1x2 grid)
+large_plots = [px.scatter(...), px.box(...)]
+
+tabs = [
+    {'title': 'Many Plots', 'figs': small_plots, 'grid_dims': (4, 3)},
+    {'title': 'Large Plots', 'figs': large_plots, 'grid_dims': (1, 2)}
+]
+```
+
+## Use Cases
+
+### 1. Multi-Subject Analysis Report
+```python
+# Create separate tab for each subject
+tabs = [
+    {
+        'title': f'Subject {i}',
+        'figs': [
+            plot_timeseries(subject_data[i]),
+            plot_statistics(subject_data[i]),
+            plot_results(subject_data[i])
+        ],
+        'grid_dims': (1, 3)
+    }
+    for i in range(n_subjects)
+]
+```
+
+### 2. Experimental Conditions Comparison
+```python
+# Grid comparing different experimental conditions
+conditions = ['baseline', 'treatment_a', 'treatment_b']
+figs = [create_condition_plot(cond) for cond in conditions]
+create_plotly_grid_html(figs, grid_shape=(1, 3))
+```
+
+### 3. Time Series Multi-Channel Display
+```python
+# Display multiple channels in a grid
+channels = ['Ch1', 'Ch2', 'Ch3', 'Ch4']
+figs = [plot_channel_timeseries(ch) for ch in channels]
+create_plotly_grid_html(figs, grid_shape=(2, 2), min_height=250)
+```
+
+## Tips
+
+1. **Performance**: Plotly.js is loaded only once (CDN) and reused across all plots
+2. **Responsive**: Grids automatically adjust to browser window size
+3. **Interactivity**: Full Plotly interactivity (zoom, pan, hover) preserved
+4. **Sharing**: HTML files are self-contained (except Plotly.js from CDN)
+5. **Offline**: Download Plotly.js locally and modify template for offline use
+
+## See Also
+
+- [Statistical Plots](statistical.qmd) - Add significance testing to box plots
+- [Time Series](time_series.qmd) - Multi-line time series with significance
+- [Plotly Express Documentation](https://plotly.com/python/plotly-express/) - Create individual figures

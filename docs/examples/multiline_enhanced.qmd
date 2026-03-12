@@ -1,0 +1,301 @@
+---
+title: "Multi-line Plots & Metadata"
+subtitle: "Advanced line plots with statistical overlays and info annotations"
+format: html
+execute:
+  eval: true 
+juypter: python3
+---
+
+## Overview
+
+Create sophisticated multi-line plots with:
+
+- Individual subject/trial traces with transparency
+- Mean lines and confidence intervals
+- Automated significance testing between groups
+- Metadata annotations for reproducibility
+
+## Basic Multi-line Plot
+
+Plot multiple lines with mean and confidence intervals:
+
+```{python}
+import polars as pl
+import numpy as np
+from mdu.plotly.multiline import multiline_plot
+from mdu.plotly.template import set_template
+
+set_template()
+
+# Generate sample data: 5 subjects, 2 conditions, 100 timepoints
+np.random.seed(42)
+time = np.linspace(0, 10, 100)
+
+data = []
+for subject in ['S1', 'S2', 'S3', 'S4', 'S5']:
+    for condition in ['A', 'B']:
+        offset = 0.5 if condition == 'B' else 0
+        noise = np.random.normal(0, 0.15, 100)
+        values = np.sin(time + offset) + noise
+        for t, v in zip(time, values):
+            data.append({'time': t, 'value': v, 'subject': subject, 'condition': condition})
+
+df = pl.DataFrame(data)
+
+# Create multi-line plot with mean lines
+fig = multiline_plot(
+    df,
+    x='time',
+    y='value',
+    line_group='subject',  # Individual subject lines
+    mean=True,             # Show group mean
+    single_lines=True,     # Show individual traces
+    color='condition',      # Color by condition
+)
+
+fig.update_layout(title='Multi-line Plot with Mean Lines')
+fig.show()
+```
+
+## With Statistical Significance
+
+Automatically add cluster permutation test:
+
+```{python}
+#| echo: true
+#| output: true
+
+# Reuse data from above
+fig = multiline_plot(
+    df,
+    x='time',
+    y='value',
+    line_group='subject',
+    mean=True,
+    mean_ci=True,
+    single_lines=False,  # Hide individual lines for clarity
+    color='condition',
+    add_significance=True,  # Automatic significance testing
+    significance_line_kwargs={'pval': 0.05, 'nperm': 1000, 'mode': 'line'}
+)
+
+fig.update_layout(title='Multi-line Plot with Significance Testing')
+fig.show()
+```
+
+## Customization Options
+
+These are code examples showing various customization options. For executable examples with outputs, see sections above.
+
+### Standard Deviation Bands
+
+Show mean ± SD instead of CI:
+
+```{python}
+fig = multiline_plot(
+    df, x='time', y='value', line_group='subject',
+    mean=True, std=True, mean_ci=False, single_lines=True, color='condition'
+)
+```
+
+### Custom Colors
+
+Specify custom colors for groups:
+
+```{python}
+fig = multiline_plot(
+    df, x='time', y='value', line_group='subject',
+    mean=True, mean_ci=True, color='condition',
+    color_discrete_map={'A': '#1f77b4', 'B': '#26a728'}
+)
+```
+
+### Individual Lines Only
+
+Show only individual traces (no summary statistics):
+
+```{python}
+fig = multiline_plot(
+    df, x='time', y='value', line_group='subject',
+    mean=False, std=False, mean_ci=False, single_lines=True, color='condition'
+)
+```
+
+## Adding Metadata with add_meta_info
+
+Add hover-accessible metadata to plots for reproducibility:
+
+```{python}
+#| echo: true
+#| output: true
+
+import plotly.express as px
+from mdu.plotly.shared import add_meta_info
+
+# Create a plot
+df_iris = px.data.iris()
+fig = px.scatter(df_iris, x='sepal_width', y='sepal_length', color='species')
+
+# Add metadata info icon
+metadata_text = """
+Dataset: Iris Flowers (Fisher 1936)
+N samples: 150
+Analysis date: 2024-03-11
+Preprocessing: None
+Notes: Classic classification dataset
+"""
+
+fig = add_meta_info(fig, text=metadata_text)
+fig.show()
+```
+
+The ⓘ icon appears in the top-left corner - hover over it to see the metadata!
+
+## Metadata for Faceted Plots
+
+Each subplot can have its own metadata:
+
+```{python}
+#| echo: true
+#| output: true
+
+# Create faceted plot (reuse df_iris from above)
+fig = px.scatter(df_iris, x='sepal_width', y='sepal_length',
+                 facet_col='species')
+
+# Different metadata for each species
+metadata_texts = [
+    "Setosa: n=50, Mean sepal length: 5.0cm",
+    "Versicolor: n=50, Mean sepal length: 5.9cm",
+    "Virginica: n=50, Mean sepal length: 6.6cm"
+]
+
+fig = add_meta_info(fig, text=metadata_texts)
+fig.show()
+```
+
+**Important**: For faceted plots, provide a list of strings matching the number of subplots. Subplots are ordered column-first, then row.
+
+## Real-World Example: Clinical Trial Data
+
+```{python}
+#| echo: true
+#| output: true
+
+# Simulate clinical trial: weekly measurements for 12 weeks
+weeks = np.arange(0, 13)
+data_trial = []
+
+for treatment in ['Placebo', 'Drug_A', 'Drug_B']:
+    for patient in range(15):  # 15 patients per group
+        # Simulate treatment effect
+        if treatment == 'Placebo':
+            trend = 0
+        elif treatment == 'Drug_A':
+            trend = -0.3 * weeks  # Moderate improvement
+        else:  # Drug_B
+            trend = -0.5 * weeks  # Strong improvement
+        
+        # Patient-specific baseline (50-80)
+        baseline = np.random.uniform(50, 80)
+        
+        # Add measurement noise
+        values = baseline + trend + np.random.normal(0, 3, len(weeks))
+        
+        for w, v in zip(weeks, values):
+            data_trial.append({
+                'week': w,
+                'score': v,
+                'patient_id': f'{treatment}_P{patient:02d}',
+                'treatment': treatment
+            })
+
+df_trial = pl.DataFrame(data_trial)
+
+# Create comprehensive visualization
+fig = multiline_plot(
+    df_trial,
+    x='week',
+    y='score',
+    line_group='patient_id',
+    mean=True,
+    mean_ci=True,
+    single_lines=True,
+    color='treatment',
+    color_discrete_map={
+        'Placebo': '#999999',
+        'Drug_A': '#2E86AB',
+        'Drug_B': '#A23B72'
+    }
+)
+
+# Add comprehensive metadata
+metadata = """
+Study: Phase II Clinical Trial
+Protocol: ABC-001-2024
+Duration: 12 weeks
+N patients: 45 (15 per group)
+Primary outcome: Depression score (HAM-D)
+Lower scores = improvement
+Analysis: Intent-to-treat
+Statistical test: Cluster permutation (p<0.05)
+"""
+
+fig = add_meta_info(fig, text=metadata)
+
+fig.update_layout(
+    title='Clinical Trial Results: Treatment Effect Over Time',
+    xaxis_title='Week',
+    yaxis_title='Depression Score (HAM-D)',
+    height=500
+)
+
+fig.show()
+```
+
+## Advanced: Multiple Conditions with Subplots
+
+Example code for creating subplots with metadata (conceptual example):
+
+```{python}
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+# Create 2x2 subplot layout
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=['Condition A', 'Condition B', 'Condition C', 'Condition D']
+)
+fig = fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1]), row=1, col=1)  # Add traces for Condition A
+fig = fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1]), row=2, col=1)  # Add traces for Condition A
+fig = fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1]), row=1, col=2)  # Add traces for Condition A
+fig = fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1]), row=2, col=2)  # Add traces for Condition A
+
+# Add traces to each subplot
+# ... (your plotting code here)
+
+# Add metadata for each subplot (order: column-first, then row)
+metadata_list = [
+    "Condition A: Baseline", "Condition B: Post-intervention",
+    "Condition C: 6-month", "Condition D: 12-month"
+]
+
+fig = add_meta_info(fig, text=metadata_list)
+fig.show()
+```
+
+## Tips for Publication-Ready Plots
+
+1. **Always include metadata**: Study details, sample size, statistical tests
+2. **Use confidence intervals**: Shows uncertainty, more informative than just mean
+3. **Consider hiding individual lines**: Use `single_lines=False` for cleaner plots
+4. **Custom colors**: Match journal requirements or institutional branding
+5. **Significance testing**: Only when you have exactly 2 groups to compare
+
+## See Also
+
+- [Advanced Statistics](advanced_statistics.qmd) - Cluster permutation tests in detail
+- [Time Series](time_series.qmd) - Basic time series plotting
+- [API: multiline_plot](../api/multiline_plot.qmd) - Full parameter documentation
+- [API: add_meta_info](../api/add_meta_info.qmd) - Metadata annotation details

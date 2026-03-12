@@ -1,0 +1,157 @@
+---
+title: "Time Series Plotting Examples"
+format: html
+execute:
+  eval: true 
+juypter: python3
+---
+
+## Basic Time Series Plot
+
+```{python}
+import numpy as np
+from mdu.plotly.time_series import plot_ts
+from mdu.plotly.template import set_template
+
+set_template()
+
+# Generate sample data
+data = np.random.randn(1000, 2)
+
+# Create and display plot
+fig = plot_ts(data, names=['Signal A', 'Signal B'])
+fig.show()
+```
+
+## Custom X-Axis
+
+```{python}
+# Time-based x-axis
+time = np.linspace(0, 10, 1000)
+data = np.sin(time) + np.random.randn(1000) * 0.1
+
+fig = plot_ts(data, x=time)
+fig.update_layout(xaxis_title="Time (s)", yaxis_title="Amplitude")
+fig.show()
+```
+
+## Large Dataset with Resampling
+
+::: {.callout-note}
+## Resampler and Static HTML
+The plotly-resampler functionality requires an interactive Python session to dynamically resample data during pan/zoom operations. **It does not work with static HTML exports** (like this documentation page). The examples below demonstrate the API usage, but interactive resampling will only work in Jupyter notebooks or live Python sessions.
+:::
+
+```{python}
+from mdu.plotly.time_series import plot_ts
+
+# Generate large dataset
+large_data = np.random.randn(1_000_000, 1)
+
+# Use resampler for performance
+fig = plot_ts(large_data, names=['Large Signal'])
+fig.show()
+```
+
+The plot will downsample automatically during pan/zoom operations in interactive sessions.
+
+## Multiple Channels
+
+```{python}
+# Simulate multi-channel recording
+n_samples = 5000
+n_channels = 4
+data = np.random.randn(n_samples, n_channels)
+
+# Add some structure
+for i in range(n_channels):
+    data[:, i] += np.sin(2 * np.pi * (i+1) * np.linspace(0, 10, n_samples))
+
+# Create names
+channel_names = [f'Channel {i+1}' for i in range(n_channels)]
+
+fig = plot_ts(data, names=channel_names, use_resampler=False)
+fig.update_layout(height=800)
+fig.show()
+```
+
+## From Example File
+
+::: {.callout-note}
+The following example demonstrates resampler usage. Remember that resampling only works in interactive sessions, not in static HTML.
+:::
+
+The repository includes `examples/resampler_example.py`:
+
+```{python}
+#| code-fold: true
+#| code-summary: "Show resampler_example.py"
+import numpy as np
+from mdu.plotly.time_series import plot_ts
+
+# Generate synthetic multi-channel data
+n_samples = 100_000
+n_channels = 3
+
+# Create time vector
+time = np.linspace(0, 100, n_samples)
+
+# Generate data with different frequencies
+data = np.zeros((n_samples, n_channels))
+for i in range(n_channels):
+    freq = (i + 1) * 0.5
+    data[:, i] = np.sin(2 * np.pi * freq * time) + np.random.randn(n_samples) * 0.1
+
+# Plot with resampler (automatically enabled for large data)
+fig = plot_ts(
+    data,
+    x=time,
+    names=['Channel 1 (0.5 Hz)', 'Channel 2 (1.0 Hz)', 'Channel 3 (1.5 Hz)'],
+    use_resampler=True
+)
+
+fig.update_layout(
+    title="Multi-Channel Time Series with Resampler",
+    xaxis_title="Time (s)",
+    height=600
+)
+
+fig.show()
+```
+
+## Performance Tips
+
+### When to Use Resampler
+
+- **Use resampler**: Datasets > 100k points
+- **Don't use resampler**: Small datasets, static exports
+
+### Memory Considerations
+
+```{python}
+# For very large datasets, process in chunks
+chunk_size = 100_000
+large_array = np.random.randn(1_000_000, 1)
+
+# Plot first chunk
+fig = plot_ts(large_array[:chunk_size], use_resampler=True)
+```
+
+### Customization
+
+```{python}
+# Combine with Plotly customization
+fig = plot_ts(data, use_resampler=False)
+
+fig.update_traces(
+    line=dict(width=1),
+    marker=dict(size=3)
+)
+
+fig.update_layout(
+    template='plotly_dark',
+    font=dict(size=14)
+)
+
+fig.show()
+```

@@ -1,0 +1,220 @@
+---
+title: "Quick Start"
+execute:
+  enabled: false
+---
+
+## First Steps
+
+This guide will help you get started with MD Utils.
+
+## Import the Package
+
+```python
+import mdu
+from mdu.plotly import html_grids, shared
+from mdu.utils import converters
+```
+
+## Creating HTML Grids
+
+One of the most powerful features is creating interactive HTML dashboards with multiple Plotly figures:
+
+```{python}
+#| eval: false
+import plotly.express as px
+from pathlib import Path
+from mdu.plotly.html_grids import create_plotly_grid_html
+
+# Create sample figures
+df = px.data.iris()
+fig1 = px.scatter(df, x="sepal_width", y="sepal_length", color="species",
+                  title="Sepal Dimensions")
+fig2 = px.scatter(df, x="petal_width", y="petal_length", color="species",
+                  title="Petal Dimensions")
+fig3 = px.box(df, x="species", y="sepal_length", title="Sepal Length Distribution")
+fig4 = px.violin(df, x="species", y="petal_length", title="Petal Length Distribution")
+
+# Create a 2x2 grid
+create_plotly_grid_html(
+    figures=[fig1, fig2, fig3, fig4],
+    grid_shape=(2, 2),
+    filename=Path("iris_dashboard.html"),
+    show=True  # Opens in browser automatically
+)
+```
+
+### Interactive Example
+
+Here's what the output looks like - a fully interactive HTML dashboard:
+
+```{=html}
+<iframe src="../examples/_assets/iris_dashboard.html" width="100%" height="650px" style="border:1px solid #ddd; border-radius: 4px; margin: 20px 0;"></iframe>
+```
+
+::: {.callout-tip}
+The dashboard above is fully interactive! Try hovering over data points, zooming, and panning in each plot. The HTML file is self-contained and can be shared with anyone.
+:::
+
+For more complex dashboards with tabs:
+
+```{python}
+#| eval: false
+from mdu.plotly.html_grids import create_tabbed_plotly_grid_html
+
+tabs = [
+    {
+        'title': 'Overview',
+        'figs': [fig1, fig2],
+        'grid_dims': (1, 2)  # 1 row, 2 columns
+    },
+    {
+        'title': 'Details',
+        'figs': [fig3, fig4],
+        'grid_dims': (2, 1)  # 2 rows, 1 column
+    }
+]
+
+create_tabbed_plotly_grid_html(
+    tabs_data=tabs,
+    filename=Path("tabbed_dashboard.html"),
+    show=True
+)
+```
+
+## Basic Time Series Plotting
+
+Create an interactive time series plot:
+
+```{python}
+#| eval: false
+import numpy as np
+from mdu.plotly.time_series import plot_ts
+
+# Generate sample data
+data = np.random.randn(1000, 2)
+x = np.linspace(0, 10, 1000)
+
+# Create plot
+fig = plot_ts(data, x=x, names=['Signal A', 'Signal B'])
+fig.show()
+```
+
+## Large Dataset Plotting
+
+For large datasets (>100k points), use the resampler:
+
+```{python}
+#| eval: false
+from mdu.plotly.time_series import plot_ts_resampling
+
+# Large dataset
+large_data = np.random.randn(1_000_000, 1)
+
+# Automatically downsamples during pan/zoom
+fig = plot_ts_resampling(large_data)
+fig.show()
+```
+
+## Color Conversion
+
+Convert hex colors to RGBA:
+
+```{python}
+#| eval: false
+from mdu.plotly.shared import hex_to_rgba
+
+# Convert with opacity
+rgba = hex_to_rgba('#ff0000', opacity=0.5)
+print(rgba)  # 'rgba(255, 0, 0, 0.5)'
+```
+
+## Custom Plotly Template
+
+Apply custom styling to your plots:
+
+```{python}
+#| eval: false
+from mdu.plotly.template import set_template
+import plotly.express as px
+
+# Set custom template
+set_template()
+
+# All subsequent plots use custom styling
+fig = px.box(x=['A', 'B', 'C'], y=[1, 2, 3])
+fig.show()
+```
+
+## Datetime Conversion
+
+Convert between datetime and float representations:
+
+```{python}
+#| eval: false
+from datetime import datetime
+import numpy as np
+from mdu.utils.converters import ToFloatConverter
+
+# Create datetime array
+dates = np.array([
+    datetime(2024, 1, 1, 12, 0, 0),
+    datetime(2024, 1, 1, 12, 1, 0),
+    datetime(2024, 1, 1, 12, 2, 0)
+])
+
+# Convert to float (offset from first value)
+converter = ToFloatConverter()
+floats = converter.to_float(dates)
+print(floats)  # [0., 60., 120.]
+
+# Convert back
+dates_back = converter.to_orig(floats)
+```
+
+## ROC Curve Plotting
+
+Plot ROC curves for ML models:
+
+```{python}
+#| eval: false
+from mdu.plotly.ml import plot_roc_curve
+import numpy as np
+
+# True labels and predictions
+y_true = np.array([0, 0, 1, 1, 1, 0])
+y_pred = np.array([0.1, 0.4, 0.35, 0.8, 0.9, 0.3])
+
+# Create ROC curve with AUC
+fig = plot_roc_curve(y_true, y_pred)
+fig.show()
+```
+
+## Event Mapping (MNE)
+
+Map MNE event IDs:
+
+```{python}
+#| eval: false
+from mdu.mne.events import inverse_map_events
+import numpy as np
+
+# Events array (sample, duration, id)
+events = np.array([
+    [100, 0, 1],
+    [200, 0, 2],
+    [300, 0, 1],
+])
+
+# Event ID mapping
+event_id = {"stimulus_1": 1, "stimulus_2": 2}
+
+# Inverse map (extracts numbers from keys)
+events_mapped = inverse_map_events(events, event_id)
+```
+
+## Next Steps
+
+- Explore the [API Reference](../api/index.qmd) for detailed documentation
+- Check out [Examples](../examples/index.qmd) for more use cases
+- Read the [Contributing Guide](contributing.qmd) to contribute

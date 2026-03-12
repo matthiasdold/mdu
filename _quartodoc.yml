@@ -1,0 +1,75 @@
+quartodoc:
+  title: API Reference
+  package: mdu
+  dir: docs/api
+  sidebar: docs/_sidebar.yml
+  options:
+    include_empty: false
+    include_classes: true
+    include_functions: true
+  parser: numpy
+  renderer:
+    style: markdown
+    show_signature: true
+    show_signature_annotations: true
+    display_name: relative
+  sections:
+    - title: HTML Grid Layouts
+      desc: "⭐ Create multi-figure HTML dashboards with grid and tabbed layouts"
+      package: mdu.plotly.html_grids
+      contents:
+        - name: create_plotly_grid_html
+        - name: create_tabbed_plotly_grid_html
+    
+    - title: Multi-line Plotting
+      desc: "⭐ Advanced line plots with statistical overlays and significance testing"
+      package: mdu.plotly.multiline
+      contents:
+        - name: multiline_plot
+    
+    - title: Statistical Testing
+      desc: "⭐ Add statistical significance indicators and model fits to plots"
+      package: mdu.plotly.stats
+      contents:
+        - name: add_cluster_permut_sig_to_plotly
+        - name: add_statsmodel_fit
+        - name: add_box_significance_indicator
+    
+    - title: Plot Enhancements
+      desc: "⭐ Add metadata and utility functions for enhanced plots"
+      package: mdu.plotly.shared
+      contents:
+        - name: add_meta_info
+        - name: hex_to_rgba
+        - name: format_float_to_text_with_suffix
+    
+    - title: Time Series Plotting
+      desc: Time series visualization with optional resampling
+      package: mdu.plotly.time_series
+      contents:
+        - name: plot_ts
+        - name: DataShapeError
+    
+    - title: Plotly Templates
+      desc: Custom styling templates
+      package: mdu.plotly.template
+      contents:
+        - name: set_template
+    
+    - title: ML Plotting
+      desc: Machine learning visualizations
+      package: mdu.plotly.ml
+      contents:
+        - name: plot_roc_curve
+    
+    - title: MNE Events
+      desc: MNE event mapping utilities
+      package: mdu.mne.events
+      contents:
+        - name: inverse_map_events
+    
+    - title: Type Converters
+      desc: Type conversion utilities
+      package: mdu.utils.converters
+      contents:
+        - name: ToFloatConverter

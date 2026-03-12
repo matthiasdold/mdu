@@ -1,0 +1,299 @@
+---
+title: "Advanced Statistical Testing"
+subtitle: "Add significance indicators and model fits to plots"
+---
+
+## Overview
+
+The `stats` module provides advanced statistical testing and visualization tools for Plotly figures:
+
+- **Cluster-based permutation tests** for time series data
+- **Box plot significance indicators** with automatic pairwise testing
+- **Statistical model fits** with confidence intervals
+
+## Cluster-Based Permutation Tests
+
+Identify significant time windows in multi-trial time series data (EEG, behavioral, etc.):
+
+```{python}
+import numpy as np
+import plotly.graph_objects as go
+from mdu.plotly.stats import add_cluster_permut_sig_to_plotly
+from mdu.plotly.template import set_template
+
+set_template()
+
+# Simulate EEG-like data: 20 trials, 100 time points
+n_trials, n_time = 20, 100
+time = np.linspace(0, 1, n_time)
+
+# Group A: baseline activity
+curves_a = np.random.randn(n_trials, n_time) * 0.5
+
+# Group B: enhanced activity during 0.4-0.6s (simulated effect)
+curves_b = np.random.randn(n_trials, n_time) * 0.5
+curves_b[:, 40:60] += 2.0  # Add signal in middle period
+
+# Create plot with mean ± SEM
+# Note: this plot could be much more conveniently created with `mdu.plotly.multiline.multiline_plot`, but here we do it manually to demonstrate the cluster permutation test integration.
+fig = go.Figure()
+mean_a = curves_a.mean(axis=0)
+sem_a = curves_a.std(axis=0) / np.sqrt(n_trials)
+fig = (
+    fig.add_scatter(x=time, y=mean_a, name="Control", line=dict(color="blue"))
+    .add_scatter(x=time, y=mean_a + sem_a, line=dict(width=0), showlegend=False)
+    .add_scatter(
+        x=time,
+        y=mean_a - sem_a,
+        fill="tonexty",
+        line=dict(width=0),
+        fillcolor="rgba(0,0,255,0.2)",
+        showlegend=False,
+    )
+)
+
+mean_b = curves_b.mean(axis=0)
+sem_b = curves_b.std(axis=0) / np.sqrt(n_trials)
+fig = (
+    fig.add_scatter(x=time, y=mean_b, name="Treatment", line=dict(color="red"))
+    .add_scatter(x=time, y=mean_b + sem_b, line=dict(width=0), showlegend=False)
+    .add_scatter(
+        x=time,
+        y=mean_b - sem_b,
+        fill="tonexty",
+        line=dict(width=0),
+        fillcolor="rgba(255,0,0,0.2)",
+        showlegend=False,
+    )
+)
+
+# Add cluster permutation test
+fig = add_cluster_permut_sig_to_plotly(
+    curves_a=curves_a,
+    curves_b=curves_b,
+    fig=fig,
+    xaxes_vals=time,
+    pval=0.05,
+    nperm=1000,
+    mode="line",  # Options: 'line', 'spark', 'p_bg', 'p_colorbar'
+)
+
+fig = fig.update_layout(
+    title="Cluster Permutation Test Example",
+    xaxis_title="Time (s)",
+    yaxis_title="Amplitude (μV)",
+)
+fig.show()
+```
+
+### Visualization Modes
+
+```{python}
+# Mode 1: Simple line indicator (default)
+fig = add_cluster_permut_sig_to_plotly(curves_a, curves_b, fig, xaxes_vals=time, mode='line')
+fig.show()
+```
+
+```{python}
+# Mode 2: Sparklines showing F-statistic
+fig = add_cluster_permut_sig_to_plotly(curves_a, curves_b, fig, xaxes_vals=time, mode='spark')
+fig.show()
+```
+
+```{python}
+# Mode 3: Background coloring for significant periods
+fig = add_cluster_permut_sig_to_plotly(curves_a, curves_b, fig, xaxes_vals=time, mode='p_bg')
+fig.show()
+```
+
+```{python}
+# Mode 4: Colorbar with p-values
+fig = add_cluster_permut_sig_to_plotly(curves_a, curves_b, fig, xaxes_vals=time, mode='p_colorbar')
+fig.show()
+```
+
+## Box Plot Significance Indicators
+
+Automatically add significance indicators between box or violin plots:
+
+```{python}
+import plotly.express as px
+from mdu.plotly.stats import add_box_significance_indicator
+from scipy import stats
+
+# Create sample data
+df = px.data.tips()
+
+# Create box plot
+fig = px.box(df, x='day', y='total_bill', color='time',
+             title='Total Bill by Day and Time')
+
+# Add significance indicators between all groups
+fig = add_box_significance_indicator(
+    fig,
+    stat_func=stats.ttest_ind,
+    same_legendgroup_only=True,  # Only compare same colors
+    only_significant=True
+)
+
+fig.show()
+```
+
+### Testing Specific Pairs
+
+```{python}
+# Test only specific day pairs
+fig = add_box_significance_indicator(
+    fig,
+    xval_pairs=[('Thur', 'Fri'), ('Fri', 'Sat'), ('Sat', 'Sun')],
+    same_legendgroup_only=True
+)
+fig.show()
+
+# Test specific color combinations
+fig = add_box_significance_indicator(
+    fig,
+    color_pairs=[('Dinner', 'Lunch')],
+    same_legendgroup_only=False
+)
+fig.show()
+```
+
+### Non-parametric Tests
+
+```{python}
+# Use Mann-Whitney U test instead of t-test
+from scipy.stats import mannwhitneyu
+
+fig = add_box_significance_indicator(
+    fig,
+    stat_func=mannwhitneyu,
+    p_quantiles=(0.05, 0.01, 0.001)  # Three significance levels
+)
+fig.show()
+```
+
+### Showing All Comparisons
+
+```{python}
+# Show both significant and non-significant (ns) comparisons
+fig = add_box_significance_indicator(
+    fig,
+    only_significant=False  # Will add 'ns' for non-significant
+)
+fig.show()
+```
+
+## Statistical Model Fits
+
+Add regression lines with confidence intervals:
+
+```{python}
+import numpy as np
+import plotly.express as px
+import statsmodels.api as sm
+from mdu.plotly.stats import add_statsmodel_fit
+
+# Create sample data
+np.random.seed(42)
+x = np.linspace(0, 10, 50)
+y = 2 * x + 5 + np.random.normal(0, 3, 50)
+
+# Create scatter plot
+fig = px.scatter(x=x, y=y, title='OLS Regression with Confidence Intervals')
+
+# Add OLS fit with 95% CI
+fig = add_statsmodel_fit(
+    fig,
+    x=x,
+    y=y,
+    fitfunc=sm.OLS,
+    show_ci=True,
+    show_obs_ci=False,
+    ci_alpha=0.05
+)
+
+fig.show()
+```
+
+### With Prediction Intervals
+
+```{python}
+# Show both confidence interval (mean) and prediction interval (observations)
+fig = add_statsmodel_fit(
+    fig, x=x, y=y,
+    show_ci=True,
+    show_obs_ci=True,  # Prediction interval for new observations
+    ci_alpha=0.05
+)
+fig.show()
+```
+
+### Custom Styling
+
+```{python}
+# Customize appearance
+fig = add_statsmodel_fit(
+    fig, x=x, y=y,
+    line_kwargs={'line': {'color': 'red', 'width': 3}},
+    ci_kwargs={'fill': 'toself', 'fillcolor': 'rgba(255,0,0,0.1)',
+               'line_color': 'rgba(255,0,0,0)'},
+    obs_ci_kwargs={'line': {'dash': 'dot', 'color': 'darkred'}}
+)
+fig.show()
+```
+
+### Multiple Subplots
+
+```{python}
+from plotly.subplots import make_subplots
+
+# Create 2x2 subplot grid
+fig = make_subplots(rows=2, cols=2)
+
+# Add data and fits to different subplots
+for i, (row, col) in enumerate([(1,1), (1,2), (2,1), (2,2)]):
+    # Generate data
+    x_sub = np.linspace(0, 10, 30)
+    y_sub = (i+1) * x_sub + np.random.normal(0, 2, 30)
+    
+    # Add scatter
+    fig.add_scatter(x=x_sub, y=y_sub, mode='markers',
+                    name=f'Data {i+1}', row=row, col=col)
+    
+    # Add fit
+    fig = add_statsmodel_fit(fig, x=x_sub, y=y_sub,
+                             row=row, col=col, show_ci=True)
+
+fig.update_layout(height=600, showlegend=False)
+fig.show()
+```
+
+## Advanced: GLM Fits
+
+```{python}
+# Generalized Linear Model for count data
+import statsmodels.api as sm
+
+# Simulate count data (e.g., Poisson)
+x = np.linspace(0, 5, 50)
+lambda_true = np.exp(0.5 + 0.3 * x)
+y_count = np.random.poisson(lambda_true)
+
+fig = px.scatter(x=x, y=y_count, title='Poisson GLM')
+
+# Fit GLM with Poisson family
+fig = add_statsmodel_fit(
+    fig, x=x, y=y_count,
+    fitfunc=lambda y, X: sm.GLM(y, X, family=sm.families.Poisson()),
+    show_ci=True
+)
+fig.show()
+```
+
+
+## See Also
+
+- [Time Series Plots](time_series.qmd) - Multi-line plots with statistical overlays
+- [HTML Grids](html_grids.qmd) - Organize multiple statistical plots
+- [API Reference: stats](../api/add_cluster_permut_sig_to_plotly.qmd) - Detailed function documentation

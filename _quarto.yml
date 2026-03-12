@@ -1,0 +1,87 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "MD Utils"
+  description: "Utilities for electrophysiology data analysis"
+  site-url: "https://matthiasdold.github.io/md_utils"
+  repo-url: "https://github.com/matthiasdold/md_utils"
+  repo-actions: [edit, issue]
+  
+  navbar:
+    background: "#343a40"
+    search: true
+    left:
+      - text: "Home"
+        file: docs/index.qmd
+      - text: "API Reference"
+        file: docs/api/index.qmd
+      - text: "Examples"
+        file: docs/examples/index.qmd
+      - text: "Guide"
+        menu:
+          - text: "Installation"
+            file: docs/guide/installation.qmd
+          - text: "Quick Start"
+            file: docs/guide/quickstart.qmd
+          - text: "Contributing"
+            file: docs/guide/contributing.qmd
+    right:
+      - icon: github
+        href: "https://github.com/matthiasdold/md_utils"
+        aria-label: GitHub
+
+  sidebar:
+    - id: examples
+      title: "Examples"
+      location: left
+      contents:
+        - docs/examples/index.qmd
+        - section: "⭐ Featured"
+          contents:
+            - docs/examples/html_grids.qmd
+            - docs/examples/advanced_statistics.qmd
+            - docs/examples/multiline_enhanced.qmd
+            - docs/examples/mne_topoplot.qmd
+        - section: "Additional"
+          contents:
+            - docs/examples/time_series.qmd
+            - docs/examples/statistical.qmd
+
+  page-footer:
+    left: |
+      Made with [Quarto](https://quarto.org/)
+    center: |
+      MD Utils - Electrophysiology Analysis Tools
+    right:
+      - icon: github
+        href: "https://github.com/matthiasdold/md_utils"
+        aria-label: GitHub
+
+format:
+  html:
+    theme: 
+      light: [cosmo, docs/custom.scss]
+    css: docs/styles.css
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-fold: false
+    code-tools: true
+    highlight-style: github
+    link-external-newwindow: true
+    number-sections: false
+
+execute:
+  # freeze: auto
+  cache: false
+  echo: true
+  warning: false
+  enabled: true
+
+jupyter: md_utils
+
+metadata-files:
+  - _quartodoc.yml
+  - docs/_sidebar.yml

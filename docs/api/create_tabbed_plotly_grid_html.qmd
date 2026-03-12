@@ -1,0 +1,68 @@
+# create_tabbed_plotly_grid_html { #mdu.plotly.html_grids.create_tabbed_plotly_grid_html }
+
+```python
+plotly.html_grids.create_tabbed_plotly_grid_html(
+    tabs_data: list[dict],
+    filename: Path = Path('plotly_tabbed_grid.html'),
+    show: bool = False,
+    min_height: int = 200,
+)
+```
+
+Create multi-tab HTML dashboard with custom grid layout per tab.
+
+Composes multiple Plotly figures into a tabbed HTML file where each tab
+contains its own grid of figures. Supports custom grid dimensions per tab
+and automatic Plotly.js library sharing for efficiency.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type         | Description                                                                                                                                                                                                                 | Default                           |
+|------------|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
+| tabs_data  | list of dict | List of dictionaries defining each tab. Each dict must contain: - 'title' (str): Tab display name - 'figs' (list of go.Figure): Plotly figures for this tab - 'grid_dims' (tuple of (int, int)): Grid shape as (rows, cols) | _required_                        |
+| filename   | Path         | Output file path for the HTML file.                                                                                                                                                                                         | `Path("plotly_tabbed_grid.html")` |
+| show       | bool         | If True, automatically opens the generated HTML file in a new browser tab.                                                                                                                                                  | `False`                           |
+| min_height | int          | Minimum height in pixels for each chart container in the grid.                                                                                                                                                              | `200`                             |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type       | Description                                                                    |
+|--------|------------|--------------------------------------------------------------------------------|
+|        | ValueError | If the number of figures in any tab exceeds its grid dimensions (rows * cols). |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import plotly.express as px
+>>> from pathlib import Path
+>>> # Create figures for different tabs
+>>> fig1 = px.scatter(x=[1, 2, 3], y=[4, 5, 6])
+>>> fig2 = px.line(x=[1, 2, 3], y=[2, 4, 6])
+>>> fig3 = px.bar(x=['A', 'B', 'C'], y=[10, 15, 13])
+>>> fig4 = px.box(x=['X', 'Y'], y=[5, 7])
+>>> # Define tabs with different grid layouts
+>>> tabs = [
+...     {
+...         'title': 'Overview',
+...         'figs': [fig1, fig2],
+...         'grid_dims': (1, 2)  # 1 row, 2 columns
+...     },
+...     {
+...         'title': 'Details',
+...         'figs': [fig3, fig4],
+...         'grid_dims': (2, 1)  # 2 rows, 1 column
+...     }
+... ]
+>>> create_tabbed_plotly_grid_html(
+...     tabs_data=tabs,
+...     filename=Path("dashboard.html"),
+...     show=True
+... )
+```
+
+## Notes {.doc-section .doc-section-notes}
+
+- The HTML file is self-contained except for Plotly.js loaded from CDN
+- Plotly.js is only included once (in the first figure) and reused
+- Tab switching triggers Plotly.Plots.resize() to ensure proper rendering
+- For offline use, consider downloading Plotly.js locally
