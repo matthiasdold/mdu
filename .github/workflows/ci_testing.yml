@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - develope
+      - fix_CI_pipelines
   pull_request:
     branches:
       - main
