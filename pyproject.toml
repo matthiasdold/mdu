@@ -30,7 +30,23 @@ resampler = ["plotly-resampler"]
 ml = ["scikit-learn>=1.0.0"]
 tfr = ["Pillow>=12.0.0", "fire>=0.7.0"]
 dash = ["dash>=2.0.0", "PyYAML>=6.0.0"]
-all = ["plotly-resampler", "scikit-learn>=1.0.0", "Pillow>=12.0.0", "fire>=0.7.0", "dash>=2.0.0", "PyYAML>=6.0.0"]
+all = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ipython>=8.38.0",
+    "ruff",
+    "quartodoc",
+    "nbformat",
+    "nbclient",
+    "jupyter-cache",
+    "ipykernel",
+    "plotly-resampler",
+    "scikit-learn>=1.0.0",
+    "Pillow>=12.0.0",
+    "fire>=0.7.0",
+    "dash>=2.0.0",
+    "PyYAML>=6.0.0"
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
