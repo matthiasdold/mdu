@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mdu"
 version = "0.0.1"
 authors = [{name="Matthias Dold", email="matthias.dold@gmx.de"}]
-description = "Default utilities I use for electrophys analysis"
+description = "Utility functions for data analysis and visualization."
 readme ="README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

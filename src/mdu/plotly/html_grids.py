@@ -77,8 +77,7 @@ def create_plotly_grid_html(
         <head>
             <meta charset="utf-8">
             <title>Composed Plotly Grid</title>
-            <!-- Use Plotly.js from a CDN -->
-            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+            <!-- Use Plotly.js injected by the first figure to ensure the correct version is used -->
             <style>
                 /* Basic styling for the grid */
                 body {{
@@ -98,7 +97,11 @@ def create_plotly_grid_html(
                     border-radius: 5px;
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                     background-color: white;
-                    min-height: {min_height}; /* Ensure charts have a minimum height */
+                    min-height: {min_height}px; /* Ensure charts have a minimum height */
+                    width: 100%;
+                    display: flex;
+                    align-items: stretch;
+                    justify-content: stretch;
                 }}
             </style>
         </head>
@@ -342,3 +345,19 @@ def create_tabbed_plotly_grid_html(
 
     if show:
         webbrowser.open_new_tab(f"file://{filename.resolve()}")
+
+
+if __name__ == "__main__":
+    import plotly.graph_objects as go
+
+    figs = [
+        go.Figure(data=go.Scatter(x=[1, 2, 3], y=[4, 5, 6])).update_layout(width=1800)
+        for _ in range(4)
+    ]
+    create_plotly_grid_html(
+        figures=figs,
+        grid_shape=(4, 1),
+        filename=Path("test_grid.html"),
+        show=True,
+        min_height=400,
+    )
