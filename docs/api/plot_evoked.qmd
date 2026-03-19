@@ -1,0 +1,80 @@
+# plot_evoked { #mdu.plotly.mne_plotting.plot_evoked }
+
+```python
+plotly.mne_plotting.plot_evoked(
+    epo: mne.BaseEpochs,
+    dp: Optional[pl.DataFrame] = None,
+    time_topo: Optional[list[float]] = None,
+    cmap: Optional[dict[str, str]] = None,
+)
+```
+
+Create interactive evoked response plot with optional topoplots.
+
+Visualizes event-related potentials (ERPs) with mean and confidence intervals
+for all channels. Optionally adds topographic maps at specific time points
+to show spatial distribution of activity.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name      | Type               | Description                                                                                                                                                                                                                            | Default    |
+|-----------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| epo       | mne.BaseEpochs     | MNE Epochs object containing the data to plot. Each channel will be displayed as a separate line with mean ± CI across epochs.                                                                                                         | _required_ |
+| dp        | pl.DataFrame       | Pre-computed Polars DataFrame from mne_epochs_to_polars(). If None, will be computed automatically. Must contain 'sample_idx', 'epoch_nr', 'time' columns plus all channel columns. Default is None.                                   | `None`     |
+| time_topo | list of float      | Time points (in seconds) at which to display topographic maps. If provided, creates a subplot layout with topoplots in the top row and the time series in the bottom row. If None, only the time series is displayed. Default is None. | `None`     |
+| cmap      | dict of str to str | Custom color map for channels. Keys are channel names, values are hex colors. If None, uses Viridis colorscale sampled across all channels. Default is None.                                                                           | `None`     |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type      | Description                                                                                                                                                                                                             |
+|--------|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|        | go.Figure | Plotly Figure with: - If time_topo is None: Single plot showing all channel traces - If time_topo is provided: Subplot layout with topoplots (top) and   time series (bottom) with connecting lines to mark time points |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type       | Description                                                                                                                |
+|--------|------------|----------------------------------------------------------------------------------------------------------------------------|
+|        | ValueError | If dp is provided but doesn't contain required columns ('sample_idx', 'epoch_nr', 'time', and all channel names from epo). |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import mne
+>>> from mdu.plotly.mne_plotting import plot_evoked
+>>> # Load sample data
+>>> sample_data = mne.datasets.sample.data_path()
+>>> raw_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw.fif'
+>>> raw = mne.io.read_raw_fif(raw_fname, preload=True)
+>>> raw.pick_types(meg=False, eeg=True)
+>>>
+>>> # Create epochs
+>>> events_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw-eve.fif'
+>>> events = mne.read_events(events_fname)
+>>> epochs = mne.Epochs(raw, events, tmin=-0.2, tmax=0.5)
+>>>
+>>> # Simple evoked plot
+>>> fig = plot_evoked(epochs)
+>>> fig.show()
+>>>
+>>> # With topoplots at specific times
+>>> fig = plot_evoked(epochs, time_topo=[0.1, 0.2, 0.3])
+>>> fig.show()
+>>>
+>>> # Custom color scheme
+>>> custom_colors = {ch: '#1f77b4' for ch in epochs.ch_names[:10]}
+>>> fig = plot_evoked(epochs, cmap=custom_colors)
+>>> fig.show()
+```
+
+## See Also {.doc-section .doc-section-see-also}
+
+mdu.plotly.multiline.multiline_plot : Underlying plotting function for time series
+mdu.plotly.mne_plotting_utils.topoplot.create_plotly_topoplot : Topoplot creation
+mdu.mne.mne2dataframe.mne_epochs_to_polars : Convert epochs to DataFrame
+
+## Notes {.doc-section .doc-section-notes}
+
+- Data is automatically scaled to microvolts (µV)
+- Confidence intervals are computed using bootstrapping across epochs
+- Topoplots use Clough-Tocher interpolation for smooth spatial distribution
+- When time_topo is used, connecting lines link time points to their topoplots

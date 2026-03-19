@@ -415,11 +415,11 @@ def plot_evoked(
     cmap: Optional[dict[str, str]] = None,
 ) -> go.Figure:
     """Create interactive evoked response plot with optional topoplots.
-    
+
     Visualizes event-related potentials (ERPs) with mean and confidence intervals
     for all channels. Optionally adds topographic maps at specific time points
     to show spatial distribution of activity.
-    
+
     Parameters
     ----------
     epo : mne.BaseEpochs
@@ -436,21 +436,21 @@ def plot_evoked(
     cmap : dict of str to str, optional
         Custom color map for channels. Keys are channel names, values are hex colors.
         If None, uses Viridis colorscale sampled across all channels. Default is None.
-    
+
     Returns
     -------
     go.Figure
         Plotly Figure with:
         - If time_topo is None: Single plot showing all channel traces
-        - If time_topo is provided: Subplot layout with topoplots (top) and 
+        - If time_topo is provided: Subplot layout with topoplots (top) and
           time series (bottom) with connecting lines to mark time points
-    
+
     Raises
     ------
     ValueError
-        If dp is provided but doesn't contain required columns ('sample_idx', 
+        If dp is provided but doesn't contain required columns ('sample_idx',
         'epoch_nr', 'time', and all channel names from epo).
-    
+
     Examples
     --------
     >>> import mne
@@ -460,31 +460,31 @@ def plot_evoked(
     >>> raw_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw.fif'
     >>> raw = mne.io.read_raw_fif(raw_fname, preload=True)
     >>> raw.pick_types(meg=False, eeg=True)
-    >>> 
+    >>>
     >>> # Create epochs
     >>> events_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw-eve.fif'
     >>> events = mne.read_events(events_fname)
     >>> epochs = mne.Epochs(raw, events, tmin=-0.2, tmax=0.5)
-    >>> 
+    >>>
     >>> # Simple evoked plot
     >>> fig = plot_evoked(epochs)
     >>> fig.show()
-    >>> 
+    >>>
     >>> # With topoplots at specific times
     >>> fig = plot_evoked(epochs, time_topo=[0.1, 0.2, 0.3])
     >>> fig.show()
-    >>> 
+    >>>
     >>> # Custom color scheme
     >>> custom_colors = {ch: '#1f77b4' for ch in epochs.ch_names[:10]}
     >>> fig = plot_evoked(epochs, cmap=custom_colors)
     >>> fig.show()
-    
+
     See Also
     --------
     mdu.plotly.multiline.multiline_plot : Underlying plotting function for time series
     mdu.plotly.mne_plotting_utils.topoplot.create_plotly_topoplot : Topoplot creation
     mdu.mne.mne2dataframe.mne_epochs_to_polars : Convert epochs to DataFrame
-    
+
     Notes
     -----
     - Data is automatically scaled to microvolts (µV)
@@ -553,12 +553,12 @@ def add_time_locked_topo(
     figml: go.Figure,
 ) -> go.Figure:
     """Add topographic maps at specific time points to an evoked plot.
-    
+
     Creates a subplot layout with topoplots in the top row showing spatial
     distribution at specified time points, and the time series plot in the
     bottom row. Adds visual connections between time points and their
     corresponding topoplots.
-    
+
     Parameters
     ----------
     dp : pl.DataFrame
@@ -572,7 +572,7 @@ def add_time_locked_topo(
     figml : go.Figure
         The multiline plot figure to add to the bottom subplot. This should be
         the output from the main evoked plotting function.
-    
+
     Returns
     -------
     go.Figure
@@ -582,7 +582,7 @@ def add_time_locked_topo(
         - Vertical dashed lines marking topoplot time points
         - Connecting lines from time points to topoplots
         - Shared colorbar for all topoplots
-    
+
     Notes
     -----
     - Topoplots are computed as mean across all epochs at each time point
@@ -590,17 +590,17 @@ def add_time_locked_topo(
     - Subplot titles show the actual time used (after closest match)
     - Row heights are set to 30% for topoplots, 70% for time series
     - All topoplots share a common coloraxis for consistent scaling
-    
+
     Examples
     --------
     This function is typically called internally by plot_evoked() when
     time_topo is provided, but can be used directly:
-    
+
     >>> import polars as pl
     >>> from mdu.mne.mne2dataframe import mne_epochs_to_polars
     >>> from mdu.plotly.multiline import multiline_plot
     >>> from mdu.plotly.mne_plotting import add_time_locked_topo
-    >>> 
+    >>>
     >>> # Prepare data
     >>> dp = mne_epochs_to_polars(epochs)
     >>> dpp = dp.unpivot(
@@ -609,14 +609,14 @@ def add_time_locked_topo(
     ...     value_name='signal',
     ...     variable_name='channel'
     ... )
-    >>> 
+    >>>
     >>> # Create base multiline plot
     >>> figml = multiline_plot(dpp, x='time', y='signal', color='channel')
-    >>> 
+    >>>
     >>> # Add topoplots
     >>> fig = add_time_locked_topo(dp, epochs, [0.1, 0.2, 0.3], figml)
     >>> fig.show()
-    
+
     See Also
     --------
     plot_evoked : Main function that calls this internally

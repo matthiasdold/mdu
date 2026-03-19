@@ -1,0 +1,29 @@
+# plot_topo { #mdu.plotly.mne_plotting.plot_topo }
+
+```python
+plotly.mne_plotting.plot_topo(
+    data: np.ndarray,
+    inst: mne.io.Raw | mne.Epochs | mne.Evoked,
+    contour_kwargs: dict = {'colorscale': 'viridis'},
+    show: bool = False,
+    scale_range: float = 1.2,
+    blank_scaling: float = 0.2,
+)
+```
+
+Plot a topoplot from data and an mne instance for meta data information.
+This is a wrapper for ./tne_plotting_utils/topoplot.py::create_plotly_topoplot
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name           | Type                                   | Description                                                            | Default                     |
+|----------------|----------------------------------------|------------------------------------------------------------------------|-----------------------------|
+| data           | np.ndarray                             | the data for the topoplot, one value for each channel in inst.ch_names | _required_                  |
+| inst           | mne.io.Raw \| mne.Epochs \| mne.Evoked | the mne instance to get the channel meta information from              | _required_                  |
+| contour_kwargs | dict                                   | kwargs for the contour plot, by default {"colorscale": "viridis"}      | `{'colorscale': 'viridis'}` |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type            | Description                |
+|--------|-----------------|----------------------------|
+|        | go.FigureWidget | topo plot figure in plotly |

@@ -62,6 +62,15 @@ Machine learning visualizations
 | --- | --- |
 | [plot_roc_curve](plot_roc_curve.qmd#mdu.plotly.ml.plot_roc_curve) | Plot ROC (Receiver Operating Characteristic) curve with AUC. |
 
+## MNE Plotting
+
+⭐ Interactive EEG/MEG visualization with topoplots and ERPs
+
+| | |
+| --- | --- |
+| [plot_evoked](plot_evoked.qmd#mdu.plotly.mne_plotting.plot_evoked) | Create interactive evoked response plot with optional topoplots. |
+| [plot_topo](plot_topo.qmd#mdu.plotly.mne_plotting.plot_topo) | Plot a topoplot from data and an mne instance for meta data information. |
+
 ## MNE Events
 
 MNE event mapping utilities

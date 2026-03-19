@@ -30,6 +30,10 @@ website:
       - docs/api/plot_roc_curve.qmd
       section: ML Plotting
     - contents:
+      - docs/api/plot_evoked.qmd
+      - docs/api/plot_topo.qmd
+      section: MNE Plotting
+    - contents:
       - docs/api/inverse_map_events.qmd
       section: MNE Events
     - contents:
