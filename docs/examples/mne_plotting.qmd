@@ -65,7 +65,7 @@ fig.update_layout(
     title="Alpha Power (8-12 Hz)",
     height=500,
     width=500
-)
+).update_xaxes(visible=False).update_yaxes(visible=False)
 
 fig.show()
 ```
@@ -97,7 +97,26 @@ fig.update_layout(
     title="Simulated Left Hemisphere Activity",
     height=500,
     width=500
+).update_xaxes(visible=False).update_yaxes(visible=False)
+
+fig.show()
+```
+
+
+### Smooth Color Gradient 
+
+Instead of fixed contour levels, you can use a smooth heatmap for coloring
+
+```{python}
+fig = create_plotly_topoplot(
+    data=simulated_data,
+    inst=raw,
+    contour_kwargs=dict(contours_coloring="heatmap", colorscale="Viridis"),
 )
+
+fig.update_layout(
+    title="Simulated Left Hemisphere Activity", height=500, width=500
+).update_xaxes(visible=False).update_yaxes(visible=False)
 
 fig.show()
 ```
@@ -120,9 +139,11 @@ epochs = mne.Epochs(
     preload=True,
     verbose=False
 )
+epochs = epochs.resample(100) # Resample for faster plotting
+sample_channels = epochs.ch_names[:5]
 
 # Create ERP plot with all channels
-fig = plot_evoked(epochs)
+fig = plot_evoked(epochs.copy().pick_channels(sample_channels))
 
 fig.update_layout(
     title="Event-Related Potentials - All Channels",
@@ -138,53 +159,23 @@ fig.show()
 Add topographic maps at specific time points to show spatial distribution:
 
 ```{python}
-# Create ERP with topoplots at 100ms, 200ms, and 300ms
+# Create ERP with topoplots at -100ms, 200ms, and 300ms
 fig = plot_evoked(
     epochs,
-    time_topo=[0.1, 0.2, 0.3]
+    time_topo=[-0.1, 0.2, 0.3],
+    mean_ci=False  # do not show the mean confidence interval for clarity in this example
 )
 
 fig.update_layout(
     title="ERPs with Time-Locked Topoplots",
     height=700,
-    width=1200
 )
 
 fig.show()
+
 ```
 
 The topoplots show the spatial distribution of activity at each specified time point, with connecting lines to the time series plot below.
-
-### Multiple Conditions
-
-Compare ERPs across different conditions:
-
-```{python}
-# Create epochs for multiple conditions
-event_id = {
-    'auditory/left': 1,
-    'auditory/right': 2,
-    'visual/left': 3,
-    'visual/right': 4
-}
-
-epochs_all = mne.Epochs(
-    raw,
-    events,
-    event_id=event_id,
-    tmin=-0.2,
-    tmax=0.5,
-    baseline=(None, 0),
-    preload=True,
-    verbose=False
-)
-
-# Plot auditory condition
-epochs_aud = epochs_all['auditory/left']
-fig_aud = plot_evoked(epochs_aud, time_topo=[0.1, 0.2])
-fig_aud.update_layout(title="Auditory Left Condition", height=650, width=1000)
-fig_aud.show()
-```
 
 ### Custom Channel Colors
 
@@ -195,20 +186,17 @@ Specify custom colors for different channel groups:
 # Frontal channels in blue, posterior in red
 custom_colors = {}
 for ch in epochs.ch_names:
-    if any(prefix in ch for prefix in ['Fp', 'AF', 'F']):
-        custom_colors[ch] = '#1f77b4'  # Blue for frontal
-    elif any(prefix in ch for prefix in ['P', 'O', 'PO']):
-        custom_colors[ch] = '#d62728'  # Red for posterior
+    if ch in epochs.ch_names[:2]:
+        custom_colors[ch] = "#7f7f7f"
+    elif ch in epochs.ch_names[2:4]:
+        custom_colors[ch] = "#d62728"
     else:
-        custom_colors[ch] = '#7f7f7f'  # Gray for others
+        custom_colors[ch] = "#1f77b4"
 
 # Plot with custom colors
-fig = plot_evoked(epochs, cmap=custom_colors)
-fig.update_layout(
-    title="ERPs - Custom Channel Coloring",
-    height=600,
-    width=900
-)
+selected_chs = epochs.ch_names[:6]
+fig = plot_evoked(epochs.copy().pick(selected_chs), cmap=custom_colors)
+fig.update_layout(title="ERPs - Custom Channel Coloring", height=600)
 fig.show()
 ```
 

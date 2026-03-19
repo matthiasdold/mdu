@@ -162,3 +162,5 @@ references/
 objects.json
 _site/
 .jupyter_cache/
+
+**/*.quarto_ipynb
