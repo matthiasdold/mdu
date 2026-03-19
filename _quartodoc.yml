@@ -68,6 +68,13 @@ quartodoc:
       contents:
         - name: inverse_map_events
     
+    - title: MNE Data Conversion
+      desc: "⭐ Convert MNE Raw and Epochs to Polars DataFrames"
+      package: mdu.mne.mne2dataframe
+      contents:
+        - name: mne_raw_to_polars
+        - name: mne_epochs_to_polars
+    
     - title: Type Converters
       desc: Type conversion utilities
       package: mdu.utils.converters

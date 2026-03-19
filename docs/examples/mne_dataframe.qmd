@@ -1,0 +1,304 @@
+---
+title: "MNE to DataFrame Conversion"
+subtitle: "Convert MNE Raw and Epochs objects to Polars DataFrames"
+---
+
+## Overview
+
+Convert MNE-Python data structures (Raw and Epochs) to Polars DataFrames for flexible data analysis and manipulation. This enables using modern DataFrame operations on EEG/MEG data.
+
+## Key Features
+
+- **Convert Raw data** to long-format DataFrames
+- **Convert Epochs data** with automatic metadata integration
+- **Automatic scaling** from Volts to microvolts (µV)
+- **Time and sample indices** included automatically
+- **Fast and memory-efficient** using Polars
+
+## Converting Raw Data
+
+Transform continuous EEG/MEG recordings into DataFrames:
+
+```{python}
+import mne
+from mdu.mne.mne2dataframe import mne_raw_to_polars
+
+# Load sample data
+sample_data_folder = mne.datasets.sample.data_path()
+raw_fname = sample_data_folder / 'MEG' / 'sample' / 'sample_audvis_raw.fif'
+
+# Load and prepare raw data
+raw = mne.io.read_raw_fif(raw_fname, preload=True, verbose=False)
+raw.pick_types(meg=False, eeg=True)
+raw.crop(tmin=0, tmax=10)  # First 10 seconds for demo
+
+# Convert to Polars DataFrame
+df = mne_raw_to_polars(raw)
+
+print(f"DataFrame shape: {df.shape}")
+print(f"Columns: {df.columns[:7]}...")  # Show first few columns
+print(df.head())
+```
+
+## Raw DataFrame Structure
+
+The resulting DataFrame has:
+- **Channel columns**: One column per EEG/MEG channel with data in µV
+- **time**: Time in seconds
+- **sample_idx**: Sequential sample index
+
+```{python}
+# Inspect the structure
+print(f"Time range: {df['time'].min():.3f}s to {df['time'].max():.3f}s")
+print(f"Number of samples: {len(df)}")
+print(f"Number of channels: {len(raw.ch_names)}")
+```
+
+## Analyzing Raw Data
+
+Use Polars operations for flexible analysis:
+
+```{python}
+import polars as pl
+import plotly.graph_objects as go
+
+# Calculate mean voltage across all channels per time point
+df_mean = df.with_columns(
+    pl.concat_list(pl.col(raw.ch_names)).alias("all_channels")
+).with_columns(
+    pl.col("all_channels").list.mean().alias("mean_voltage")
+)
+
+# Plot mean voltage over time
+fig = go.Figure()
+fig.add_trace(go.Scatter(
+    x=df_mean["time"],
+    y=df_mean["mean_voltage"],
+    mode='lines',
+    name='Mean Voltage'
+))
+
+fig.update_layout(
+    title="Mean Voltage Across All Channels",
+    xaxis_title="Time (s)",
+    yaxis_title="Voltage (µV)",
+    height=400
+)
+
+fig.show()
+```
+
+## Converting Epochs Data
+
+Convert epoched data with automatic metadata integration:
+
+```{python}
+from mdu.mne.mne2dataframe import mne_epochs_to_polars
+
+# Load events
+events_fname = sample_data_folder / 'MEG' / 'sample' / 'sample_audvis_raw-eve.fif'
+events = mne.read_events(events_fname, verbose=False)
+
+# Create epochs with different conditions
+event_id = {'auditory/left': 1, 'auditory/right': 2, 'visual/left': 3, 'visual/right': 4}
+epochs = mne.Epochs(
+    raw,
+    events,
+    event_id=event_id,
+    tmin=-0.2,
+    tmax=0.5,
+    baseline=(None, 0),
+    preload=True,
+    verbose=False
+)
+
+# Convert to DataFrame
+df_epochs = mne_epochs_to_polars(epochs)
+
+print(f"Epochs DataFrame shape: {df_epochs.shape}")
+print(f"Unique epochs: {df_epochs['epoch_idx'].n_unique()}")
+print(df_epochs.head())
+```
+
+## Epochs DataFrame Structure
+
+The epochs DataFrame includes:
+- **Channel columns**: EEG/MEG data in µV
+- **time**: Time relative to event (e.g., -0.2 to 0.5s)
+- **epoch_idx**: Index identifying each epoch
+- **sample_idx**: Global sequential sample index
+- **Metadata columns**: Any metadata from the epochs object
+
+```{python}
+# Check metadata columns
+metadata_cols = [col for col in df_epochs.columns 
+                 if col not in ['time', 'epoch_idx', 'sample_idx'] 
+                 and col not in raw.ch_names]
+print(f"Metadata columns: {metadata_cols}")
+```
+
+## Epochs with Custom Metadata
+
+Add custom metadata for richer analysis:
+
+```{python}
+import pandas as pd
+import numpy as np
+
+# Create epochs with custom metadata
+np.random.seed(42)
+metadata = pd.DataFrame({
+    'condition': [list(event_id.keys())[e % len(event_id)] for e in range(len(epochs))],
+    'trial_num': range(len(epochs)),
+    'rt': np.random.uniform(0.3, 0.8, len(epochs)),
+    'correct': np.random.choice([True, False], len(epochs), p=[0.8, 0.2])
+})
+
+epochs.metadata = metadata
+
+# Convert with metadata
+df_with_meta = mne_epochs_to_polars(epochs)
+
+print("\nDataFrame with metadata:")
+print(df_with_meta.select(['epoch_idx', 'condition', 'trial_num', 'rt', 'correct']).unique())
+```
+
+## Analyzing Epochs by Condition
+
+Group and analyze by experimental conditions:
+
+```{python}
+# Calculate mean ERP for each condition at a specific channel
+channel = 'EEG 001'
+
+# Group by condition and time
+erp_by_condition = (
+    df_with_meta
+    .group_by(['condition', 'time'])
+    .agg(pl.col(channel).mean().alias('mean_voltage'))
+    .sort(['condition', 'time'])
+)
+
+# Plot ERPs
+fig = go.Figure()
+
+for condition in erp_by_condition['condition'].unique().sort():
+    condition_data = erp_by_condition.filter(pl.col('condition') == condition)
+    fig.add_trace(go.Scatter(
+        x=condition_data['time'],
+        y=condition_data['mean_voltage'],
+        mode='lines',
+        name=condition
+    ))
+
+fig.update_layout(
+    title=f"Event-Related Potentials by Condition ({channel})",
+    xaxis_title="Time (s)",
+    yaxis_title="Voltage (µV)",
+    height=400
+)
+fig.add_vline(x=0, line_dash="dash", line_color="gray", annotation_text="Event")
+
+fig.show()
+```
+
+## Advanced Analysis: Response Time Effects
+
+Analyze how neural responses vary with behavioral measures:
+
+```{python}
+# Categorize trials by response time
+df_with_meta = df_with_meta.with_columns(
+    pl.when(pl.col('rt') < pl.col('rt').median())
+    .then(pl.lit('fast'))
+    .otherwise(pl.lit('slow'))
+    .alias('rt_category')
+)
+
+# Compare fast vs slow trials
+erp_by_rt = (
+    df_with_meta
+    .group_by(['rt_category', 'time'])
+    .agg(pl.col(channel).mean().alias('mean_voltage'))
+    .sort(['rt_category', 'time'])
+)
+
+# Plot
+fig = go.Figure()
+
+for rt_cat in ['fast', 'slow']:
+    data = erp_by_rt.filter(pl.col('rt_category') == rt_cat)
+    fig.add_trace(go.Scatter(
+        x=data['time'],
+        y=data['mean_voltage'],
+        mode='lines',
+        name=f'{rt_cat.capitalize()} RT'
+    ))
+
+fig.update_layout(
+    title=f"ERPs by Response Time ({channel})",
+    xaxis_title="Time (s)",
+    yaxis_title="Voltage (µV)",
+    height=400
+)
+fig.add_vline(x=0, line_dash="dash", line_color="gray")
+
+fig.show()
+```
+
+## Export to CSV or Parquet
+
+Save for use in other tools:
+
+```{python}
+#| eval: false
+
+# Save as CSV
+df_with_meta.write_csv("epochs_data.csv")
+
+# Save as Parquet (more efficient)
+df_with_meta.write_parquet("epochs_data.parquet")
+
+# Save as Pandas DataFrame
+df_pandas = df_with_meta.to_pandas()
+```
+
+## Function Reference
+
+### `mne_raw_to_polars`
+
+Convert MNE Raw object to Polars DataFrame.
+
+**Parameters**:
+
+- `raw`: MNE Raw object (e.g., `mne.io.Raw`)
+
+**Returns**: Polars DataFrame with columns for each channel (in µV), time, and sample_idx
+
+### `mne_epochs_to_polars`
+
+Convert MNE Epochs object to Polars DataFrame.
+
+**Parameters**:
+
+- `epo`: MNE Epochs object (e.g., `mne.Epochs`)
+
+**Returns**: Polars DataFrame with columns for each channel (in µV), time, epoch_idx, sample_idx, and any metadata columns
+
+## Tips
+
+::: {.callout-tip}
+### Memory Efficiency
+Polars DataFrames are memory-efficient and fast. For very large datasets, consider processing in chunks or using Polars' lazy evaluation with `.lazy()`.
+:::
+
+::: {.callout-note}
+### Automatic Scaling
+Data is automatically scaled from Volts (MNE default) to microvolts (µV) for convenience. No need to multiply by 1e6 yourself!
+:::
+
+::: {.callout-tip}
+### Integration with Analysis Tools
+The DataFrame format makes it easy to use modern data analysis tools like Polars, DuckDB, or export to R/MATLAB for further analysis.
+:::
+

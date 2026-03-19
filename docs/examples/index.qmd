@@ -38,6 +38,15 @@ Interactive EEG/MEG topographic maps from MNE-Python data:
 
 **Key functions**: `create_plotly_topoplot`
 
+### [MNE to DataFrame Conversion](mne_dataframe.qmd)
+Convert MNE Raw and Epochs objects to Polars DataFrames for flexible data analysis:
+- Transform continuous EEG/MEG recordings to long-format DataFrames
+- Automatic metadata integration from epochs
+- Analyze neural data with modern DataFrame operations
+- Export to CSV, Parquet, or use with other analysis tools
+
+**Key functions**: `mne_raw_to_polars`, `mne_epochs_to_polars`
+
 ## Additional Examples
 
 ### [Time Series Plotting](time_series.qmd)
