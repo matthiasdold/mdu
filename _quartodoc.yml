@@ -62,6 +62,13 @@ quartodoc:
       contents:
         - name: plot_roc_curve
     
+    - title: MNE Plotting
+      desc: "⭐ Interactive EEG/MEG visualization with topoplots and ERPs"
+      package: mdu.plotly.mne_plotting
+      contents:
+        - name: plot_evoked
+        - name: plot_topo
+    
     - title: MNE Events
       desc: MNE event mapping utilities
       package: mdu.mne.events

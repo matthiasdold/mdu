@@ -1,0 +1,337 @@
+---
+title: "MNE Plotting"
+subtitle: "Interactive EEG/MEG visualization with Plotly"
+---
+
+## Overview
+
+Create interactive visualizations for EEG/MEG data from MNE-Python structures. This guide covers topographic maps, event-related potentials (ERPs), and combined visualizations.
+
+## Key Features
+
+- **Interactive topoplots** with smooth interpolation and customizable colorscales
+- **Event-related potential plots** with mean, confidence intervals, and individual traces
+- **Time-locked topoplots** showing spatial distribution at specific time points
+- **Automatic channel positioning** from MNE info structure
+- **Publication-ready visualizations** with Plotly interactivity
+
+## Setup
+
+Load sample data for the examples:
+
+```{python}
+import numpy as np
+import mne
+from mdu.plotly.template import set_template
+from mdu.plotly.mne_plotting import plot_evoked
+from mdu.plotly.mne_plotting_utils.topoplot import create_plotly_topoplot
+
+# Set template for consistent styling
+set_template()
+
+# Load MNE sample data
+sample_data_folder = mne.datasets.sample.data_path()
+raw_fname = sample_data_folder / 'MEG' / 'sample' / 'sample_audvis_raw.fif'
+events_fname = sample_data_folder / 'MEG' / 'sample' / 'sample_audvis_raw-eve.fif'
+
+# Load and prepare data
+raw = mne.io.read_raw_fif(raw_fname, preload=True, verbose=False)
+raw.pick_types(meg=False, eeg=True)
+raw.crop(tmax=60)  # Use first 60 seconds for demo
+
+events = mne.read_events(events_fname, verbose=False)
+```
+
+## Basic Topoplots
+
+### Alpha Power Topoplot
+
+Visualize spatial distribution of alpha band power:
+
+```{python}
+# Compute average power in alpha band (8-12 Hz)
+spectrum = raw.compute_psd(fmin=8, fmax=12, verbose=False)
+data = spectrum.get_data().mean(axis=1)  # Average over frequencies
+
+# Create topoplot
+fig = create_plotly_topoplot(
+    data=data,
+    inst=raw,
+    contour_kwargs={"colorscale": "RdBu_r"},
+    show=False
+)
+
+fig.update_layout(
+    title="Alpha Power (8-12 Hz)",
+    height=500,
+    width=500
+)
+
+fig.show()
+```
+
+### Custom Colorscale
+
+Use different colorscales for different visualizations:
+
+```{python}
+# Simulate bilateral activity
+np.random.seed(42)
+n_channels = len(raw.ch_names)
+simulated_data = np.random.randn(n_channels) * 0.3
+
+# Add stronger activity to left hemisphere channels
+left_channels = [i for i, name in enumerate(raw.ch_names) 
+                 if name.startswith('EEG 0')]
+simulated_data[left_channels] += 2.0
+
+# Create topoplot with Viridis colorscale
+fig = create_plotly_topoplot(
+    data=simulated_data,
+    inst=raw,
+    contour_kwargs={"colorscale": "Viridis"},
+    show=False
+)
+
+fig.update_layout(
+    title="Simulated Left Hemisphere Activity",
+    height=500,
+    width=500
+)
+
+fig.show()
+```
+
+## Event-Related Potentials (ERPs)
+
+### Simple ERP Plot
+
+Visualize evoked responses with all channel time series:
+
+```{python}
+# Create epochs for auditory left condition
+epochs = mne.Epochs(
+    raw, 
+    events, 
+    event_id={'auditory/left': 1}, 
+    tmin=-0.2, 
+    tmax=0.5,
+    baseline=(None, 0),
+    preload=True,
+    verbose=False
+)
+
+# Create ERP plot with all channels
+fig = plot_evoked(epochs)
+
+fig.update_layout(
+    title="Event-Related Potentials - All Channels",
+    height=600,
+    width=900
+)
+
+fig.show()
+```
+
+### ERP with Time-Locked Topoplots
+
+Add topographic maps at specific time points to show spatial distribution:
+
+```{python}
+# Create ERP with topoplots at 100ms, 200ms, and 300ms
+fig = plot_evoked(
+    epochs,
+    time_topo=[0.1, 0.2, 0.3]
+)
+
+fig.update_layout(
+    title="ERPs with Time-Locked Topoplots",
+    height=700,
+    width=1200
+)
+
+fig.show()
+```
+
+The topoplots show the spatial distribution of activity at each specified time point, with connecting lines to the time series plot below.
+
+### Multiple Conditions
+
+Compare ERPs across different conditions:
+
+```{python}
+# Create epochs for multiple conditions
+event_id = {
+    'auditory/left': 1,
+    'auditory/right': 2,
+    'visual/left': 3,
+    'visual/right': 4
+}
+
+epochs_all = mne.Epochs(
+    raw,
+    events,
+    event_id=event_id,
+    tmin=-0.2,
+    tmax=0.5,
+    baseline=(None, 0),
+    preload=True,
+    verbose=False
+)
+
+# Plot auditory condition
+epochs_aud = epochs_all['auditory/left']
+fig_aud = plot_evoked(epochs_aud, time_topo=[0.1, 0.2])
+fig_aud.update_layout(title="Auditory Left Condition", height=650, width=1000)
+fig_aud.show()
+```
+
+### Custom Channel Colors
+
+Specify custom colors for different channel groups:
+
+```{python}
+# Create custom color mapping
+# Frontal channels in blue, posterior in red
+custom_colors = {}
+for ch in epochs.ch_names:
+    if any(prefix in ch for prefix in ['Fp', 'AF', 'F']):
+        custom_colors[ch] = '#1f77b4'  # Blue for frontal
+    elif any(prefix in ch for prefix in ['P', 'O', 'PO']):
+        custom_colors[ch] = '#d62728'  # Red for posterior
+    else:
+        custom_colors[ch] = '#7f7f7f'  # Gray for others
+
+# Plot with custom colors
+fig = plot_evoked(epochs, cmap=custom_colors)
+fig.update_layout(
+    title="ERPs - Custom Channel Coloring",
+    height=600,
+    width=900
+)
+fig.show()
+```
+
+## Individual Topoplot at Specific Time
+
+Create a standalone topoplot for a specific time point:
+
+```{python}
+# Compute evoked response
+evoked = epochs.average()
+
+# Get data at peak (around 100ms)
+time_idx = np.argmin(np.abs(evoked.times - 0.1))
+data_at_peak = evoked.data[:, time_idx]
+
+# Create topoplot
+fig = create_plotly_topoplot(
+    data=data_at_peak * 1e6,  # Convert to µV
+    inst=evoked,
+    contour_kwargs={"colorscale": "RdBu_r"},
+    show=False
+)
+
+fig.update_layout(
+    title=f"Auditory Evoked Response at {evoked.times[time_idx]*1000:.0f}ms",
+    height=500,
+    width=500
+)
+
+fig.show()
+```
+
+## Advanced: Pre-computed DataFrame
+
+For efficiency with large datasets, pre-compute the DataFrame:
+
+```{python}
+from mdu.mne.mne2dataframe import mne_epochs_to_polars
+
+# Convert epochs to DataFrame once
+dp = mne_epochs_to_polars(epochs)
+
+print(f"DataFrame shape: {dp.shape}")
+print(f"Columns: {dp.columns[:10]}")
+
+# Use pre-computed DataFrame for plotting
+fig = plot_evoked(epochs, dp=dp, time_topo=[0.15, 0.25])
+fig.update_layout(height=650, width=1000)
+fig.show()
+```
+
+## Function Reference
+
+### `plot_evoked`
+
+Create interactive evoked response plot with optional topoplots.
+
+**Parameters**:
+
+- `epo` (mne.BaseEpochs): Epochs object containing the data
+- `dp` (pl.DataFrame, optional): Pre-computed DataFrame from mne_epochs_to_polars()
+- `time_topo` (list of float, optional): Time points for topographic maps
+- `cmap` (dict, optional): Custom color mapping for channels
+
+**Returns**: Plotly Figure
+
+### `create_plotly_topoplot`
+
+Create interactive topoplot from MNE data.
+
+**Parameters**:
+
+- `data` (np.ndarray): Array of values (one per channel)
+- `inst` (mne.io.Raw | mne.Epochs | mne.Evoked): MNE instance for channel info
+- `contour_kwargs` (dict): Plotly contour parameters (e.g., colorscale)
+- `show` (bool): Whether to display immediately
+- `scale_range` (float): Scaling factor for head circle size
+- `blank_scaling` (float): Fraction of radius to blank out extrapolation
+
+**Returns**: Plotly Figure
+
+## Tips
+
+::: {.callout-tip}
+### Performance with Large Datasets
+For datasets with many epochs or long time series, pre-compute the DataFrame with `mne_epochs_to_polars()` and pass it to `plot_evoked()` to avoid repeated conversions.
+:::
+
+::: {.callout-note}
+### Channel Selection
+Make sure your data array length matches the number of channels. Use `inst.pick_types()` or `inst.pick_channels()` to select specific channel types before plotting.
+:::
+
+::: {.callout-tip}
+### Interpolation Quality
+Topoplots use Clough-Tocher 2D interpolation for smooth contours. The `blank_scaling` parameter controls extrapolation distance from sensors (default 0.2 = 20% of head radius).
+:::
+
+::: {.callout-note}
+### Colorscales
+Popular colorscales for EEG/MEG data:
+
+- **RdBu_r**: Red-blue diverging (good for positive/negative values)
+- **Viridis**: Sequential colorscale (good for power/amplitude)
+- **Plasma**: Sequential with high contrast
+- **Jet**: Traditional but less perceptually uniform
+:::
+
+## Integration with Other Tools
+
+Combine with other mdu features:
+
+```{python}
+#| eval: false
+
+# Add statistical testing to ERP plots
+from mdu.plotly.stats import add_cluster_permut_sig_to_plotly
+
+# Compare two conditions with significance testing
+epochs_cond1 = epochs_all['auditory/left']
+epochs_cond2 = epochs_all['auditory/right']
+
+# Create comparison plot with significance
+# (See advanced statistics example for details)
+```
+

@@ -62,6 +62,11 @@ def extract_subplot_coordinates(fig: go.Figure) -> list[tuple[str, str, str, str
     return matches
 
 
+def rgb_to_hex(rgb_str):
+    nums = [int(x) for x in rgb_str.strip("rgb()").split(",")]
+    return "#{:02x}{:02x}{:02x}".format(*nums)
+
+
 def hex_to_rgba(hex_color: str, opacity: float | None = None) -> str:
     """Convert hex color code to RGBA string format.
 
@@ -187,7 +192,7 @@ def add_meta_info(fig: go.Figure, text: str | list[str]) -> go.Figure:
         text, str
     ):  # when single string also assume no align with subplots
         # get the grid info
-        if len(fig.data) == 0:
+        if len(fig.data) == 0:  # type: ignore
             raise ValueError(
                 "Figure has no data traces, cannot determine subplot coordinates"
             )

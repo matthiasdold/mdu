@@ -20,7 +20,7 @@ def mne_epochs_to_polars(epo: mne.BaseEpochs) -> pl.DataFrame:
         Polars DataFrame with columns:
         - Channel columns: One column per channel with data in µV
         - time: Time in seconds relative to epoch onset
-        - epoch_idx: Index identifying each epoch (0 to n_epochs-1)
+        - epoch_nr: Index identifying each epoch (0 to n_epochs-1)
         - sample_idx: Global continuous sample index across all epochs
         - Metadata columns: Any columns from epo.metadata (if present)
 
@@ -34,7 +34,7 @@ def mne_epochs_to_polars(epo: mne.BaseEpochs) -> pl.DataFrame:
     >>> epochs = mne.EpochsArray(data, info)
     >>> df = mne_epochs_to_polars(epochs)
     >>> df.shape
-    (250, 5)  # 5 epochs * 50 timepoints, with Ch1, Ch2, time, epoch_idx, sample_idx
+    (250, 5)  # 5 epochs * 50 timepoints, with Ch1, Ch2, time, epoch_nr, sample_idx
 
     See Also
     --------
@@ -49,7 +49,7 @@ def mne_epochs_to_polars(epo: mne.BaseEpochs) -> pl.DataFrame:
     df = pl.concat(
         [
             pl.DataFrame(data[i, :, :].T, schema=channel_names).with_columns(
-                pl.Series("time", times), pl.lit(i).alias("epoch_idx")
+                pl.Series("time", times), pl.lit(i).alias("epoch_nr")
             )
             for i in range(data.shape[0])
         ],  # type: ignore
@@ -59,8 +59,8 @@ def mne_epochs_to_polars(epo: mne.BaseEpochs) -> pl.DataFrame:
     df = df.with_row_index("sample_idx")
 
     if epo.metadata is not None:
-        meta_df = pl.from_pandas(epo.metadata).with_row_index("epoch_idx")  # type: ignore
-        df = df.join(meta_df, on="epoch_idx", how="left")
+        meta_df = pl.from_pandas(epo.metadata).with_row_index("epoch_nr")  # type: ignore
+        df = df.join(meta_df, on="epoch_nr", how="left")
 
     return df
 

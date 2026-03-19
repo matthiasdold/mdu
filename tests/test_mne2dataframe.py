@@ -56,7 +56,7 @@ class TestMneEpochsToPolars:
 
         # Check that all expected columns are present
         assert "time" in df.columns
-        assert "epoch_idx" in df.columns
+        assert "epoch_nr" in df.columns
         assert "sample_idx" in df.columns
         assert "Ch1" in df.columns
         assert "Ch2" in df.columns
@@ -78,7 +78,7 @@ class TestMneEpochsToPolars:
         df = mne_epochs_to_polars(epochs)
 
         # Get first epoch, first channel
-        first_epoch_ch1 = df.filter(pl.col("epoch_idx") == 0)["Ch1"].to_numpy()
+        first_epoch_ch1 = df.filter(pl.col("epoch_nr") == 0)["Ch1"].to_numpy()
 
         # Compare with original data (scaled to µV)
         expected = data[0, 0, :] * 1e6
@@ -90,7 +90,7 @@ class TestMneEpochsToPolars:
         df = mne_epochs_to_polars(epochs)
 
         # Get times for first epoch
-        times_epoch_0 = df.filter(pl.col("epoch_idx") == 0)["time"].to_numpy()
+        times_epoch_0 = df.filter(pl.col("epoch_nr") == 0)["time"].to_numpy()
 
         # Compare with MNE times
         np.testing.assert_array_almost_equal(times_epoch_0, epochs.times)
@@ -101,23 +101,23 @@ class TestMneEpochsToPolars:
         df = mne_epochs_to_polars(epochs)
 
         # Get times for different epochs
-        times_epoch_0 = df.filter(pl.col("epoch_idx") == 0)["time"].to_numpy()
-        times_epoch_1 = df.filter(pl.col("epoch_idx") == 1)["time"].to_numpy()
-        times_epoch_2 = df.filter(pl.col("epoch_idx") == 2)["time"].to_numpy()
+        times_epoch_0 = df.filter(pl.col("epoch_nr") == 0)["time"].to_numpy()
+        times_epoch_1 = df.filter(pl.col("epoch_nr") == 1)["time"].to_numpy()
+        times_epoch_2 = df.filter(pl.col("epoch_nr") == 2)["time"].to_numpy()
 
         # All epochs should have same time values
         np.testing.assert_array_equal(times_epoch_0, times_epoch_1)
         np.testing.assert_array_equal(times_epoch_0, times_epoch_2)
 
-    def test_epoch_idx_column(self, sample_epochs):
-        """Test that epoch_idx column is correctly assigned."""
+    def test_epoch_nr_column(self, sample_epochs):
+        """Test that epoch_nr column is correctly assigned."""
         epochs, data = sample_epochs
         df = mne_epochs_to_polars(epochs)
 
         n_epochs = data.shape[0]
 
         for i in range(n_epochs):
-            epoch_data = df.filter(pl.col("epoch_idx") == i)
+            epoch_data = df.filter(pl.col("epoch_nr") == i)
             # Each epoch should have n_times rows
             assert epoch_data.height == data.shape[2]
 
@@ -143,7 +143,7 @@ class TestMneEpochsToPolars:
         assert "correct" in df.columns
 
         # Check first epoch has correct metadata
-        first_epoch = df.filter(pl.col("epoch_idx") == 0)
+        first_epoch = df.filter(pl.col("epoch_nr") == 0)
         assert first_epoch["condition"][0] == "A"
         assert first_epoch["rt"][0] == 0.5
         assert first_epoch["correct"][0] is True
@@ -161,7 +161,7 @@ class TestMneEpochsToPolars:
         expected_rts = [0.5, 0.6, 0.55, 0.58, 0.52]
 
         for i, (cond, rt) in enumerate(zip(expected_conditions, expected_rts)):
-            epoch_data = df.filter(pl.col("epoch_idx") == i)
+            epoch_data = df.filter(pl.col("epoch_nr") == i)
             assert epoch_data["condition"][0] == cond
             assert epoch_data["rt"][0] == rt
 
@@ -172,7 +172,7 @@ class TestMneEpochsToPolars:
 
         # Should still have basic columns
         assert "time" in df.columns
-        assert "epoch_idx" in df.columns
+        assert "epoch_nr" in df.columns
         assert "sample_idx" in df.columns
         assert "Ch1" in df.columns
         assert "Ch2" in df.columns
@@ -187,7 +187,7 @@ class TestMneEpochsToPolars:
         df = mne_epochs_to_polars(epochs)
 
         assert df.height == 30
-        assert df["epoch_idx"].unique().to_list() == [0]
+        assert df["epoch_nr"].unique().to_list() == [0]
 
     def test_channel_names_preserved(self, sample_epochs):
         """Test that channel names are preserved as column names."""
@@ -203,12 +203,12 @@ class TestMneEpochsToPolars:
         df = mne_epochs_to_polars(epochs)
 
         # Test random epoch and channel
-        epoch_idx = 2
+        epoch_nr = 2
         ch_idx = 1
         ch_name = epochs.ch_names[ch_idx]
 
-        epoch_data = df.filter(pl.col("epoch_idx") == epoch_idx)[ch_name].to_numpy()
-        expected = data[epoch_idx, ch_idx, :] * 1e6
+        epoch_data = df.filter(pl.col("epoch_nr") == epoch_nr)[ch_name].to_numpy()
+        expected = data[epoch_nr, ch_idx, :] * 1e6
 
         np.testing.assert_array_almost_equal(epoch_data, expected, decimal=5)
 

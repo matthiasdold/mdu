@@ -3,9 +3,11 @@
 import mne
 import numpy as np
 import pandas as pd
+import polars as pl
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from typing import Optional
 
 from tqdm import tqdm
 
@@ -13,6 +15,9 @@ from mdu.plotly.mne_plotting_utils.epoch_image import plot_epo_image
 from mdu.plotly.mne_plotting_utils.topoplot import create_plotly_topoplot
 from mdu.plotly.time_series import plot_ts
 from mdu.plotly.template import set_template
+from mdu.mne.mne2dataframe import mne_epochs_to_polars
+from mdu.plotly.multiline import multiline_plot
+from mdu.plotly.shared import rgb_to_hex
 
 set_template()
 
@@ -63,8 +68,8 @@ def plot_variances(
     epo: mne.BaseEpochs,
     df: pd.DataFrame,
     color_by: str = "",
-    row: list[int, int] = [1, 1],
-    col: list[int, int] = [1, 2],
+    row: Optional[list[int]] = None,
+    col: Optional[list[int]] = None,
     show: bool = False,
 ) -> go.Figure:
     """Plot the variance distribution as scatter along time and
@@ -100,6 +105,8 @@ def plot_variances(
         epo.plot_image(evoked=False)
 
     """
+    row = row if row is not None else [1, 1]
+    col = col if col is not None else [1, 2]
 
     data = epo.get_data()
 
@@ -111,9 +118,9 @@ def plot_variances(
     grps = list(df.groupby(color_by))
     colormap = dict(zip([g[0] for g in grps], px.colors.qualitative.Plotly))
 
-    dw = pd.DataFrame(var_data, columns=["y"])
+    dw = pd.DataFrame(var_data, columns=["y"])  # type: ignore
     dw[color_by] = df[color_by].to_numpy()
-    dw["color"] = df[color_by].map(colormap).to_numpy()
+    dw["color"] = df[color_by].map(colormap).to_numpy()  # type: ignore
     dw = dw.reset_index().rename(columns={"index": "x"})
 
     fig = None
@@ -195,7 +202,6 @@ def plot_epoch_image(
     vmax_q: float = 0.99,
     log_vals: bool = False,
     showscale: bool = True,
-    show: bool = False,
 ):
     """Plot the epoch image of given epochs, wrapper around ./mne_plotting_utils/epoch_image.py::plot_epo_image
 
@@ -234,8 +240,6 @@ def plot_epoch_image(
         if true, work on log transformed data
     showscale : bool
         if true, show the colorbar
-    show : bool, optional
-        if True, fig.show() is called
 
     Returns
     -------
@@ -262,7 +266,6 @@ def plot_epoch_image(
         vmax_q=vmax_q,
         log_vals=log_vals,
         showscale=showscale,
-        show=show,
     )
 
 
@@ -348,7 +351,7 @@ def plot_psds(
         Plotly figure with PSD plots.
     """
     mne_psd = epo.compute_psd(n_jobs=-1, **psd_kwargs)
-    data = np.vstack(np.transpose(mne_psd.get_data(), (0, 2, 1)))
+    data = np.vstack(np.transpose(mne_psd.get_data(), (0, 2, 1)))  # type: ignore
 
     data = 10 * np.log10(data) + 120  # convert mV -> V and to dB
 
@@ -357,13 +360,14 @@ def plot_psds(
         data,
         columns=mne_psd.ch_names,
     )
-    df["epo_nr"] = np.repeat(np.arange(len(epo)), mne_psd.get_data().shape[-1])
+    df["epo_nr"] = np.repeat(np.arange(len(epo)), mne_psd.get_data().shape[-1])  # type: ignore
     df["freqs"] = np.tile(mne_psd.freqs, len(epo))
 
     # add metadata for coloring
     if color_by != "":
         df[color_by] = np.repeat(
-            epo.metadata[color_by].to_numpy(), mne_psd.get_data().shape[-1]
+            epo.metadata[color_by].to_numpy(),  # type: ignore
+            mne_psd.get_data().shape[-1],  # type: ignore
         )
     else:
         color_by = "epo_nr"
@@ -400,5 +404,329 @@ def plot_psds(
         )
 
         fig.show()
+
+    return fig
+
+
+def plot_evoked(
+    epo: mne.BaseEpochs,
+    dp: Optional[pl.DataFrame] = None,
+    time_topo: Optional[list[float]] = None,
+    cmap: Optional[dict[str, str]] = None,
+) -> go.Figure:
+    """Create interactive evoked response plot with optional topoplots.
+    
+    Visualizes event-related potentials (ERPs) with mean and confidence intervals
+    for all channels. Optionally adds topographic maps at specific time points
+    to show spatial distribution of activity.
+    
+    Parameters
+    ----------
+    epo : mne.BaseEpochs
+        MNE Epochs object containing the data to plot. Each channel will be
+        displayed as a separate line with mean ± CI across epochs.
+    dp : pl.DataFrame, optional
+        Pre-computed Polars DataFrame from mne_epochs_to_polars(). If None,
+        will be computed automatically. Must contain 'sample_idx', 'epoch_nr',
+        'time' columns plus all channel columns. Default is None.
+    time_topo : list of float, optional
+        Time points (in seconds) at which to display topographic maps. If provided,
+        creates a subplot layout with topoplots in the top row and the time series
+        in the bottom row. If None, only the time series is displayed. Default is None.
+    cmap : dict of str to str, optional
+        Custom color map for channels. Keys are channel names, values are hex colors.
+        If None, uses Viridis colorscale sampled across all channels. Default is None.
+    
+    Returns
+    -------
+    go.Figure
+        Plotly Figure with:
+        - If time_topo is None: Single plot showing all channel traces
+        - If time_topo is provided: Subplot layout with topoplots (top) and 
+          time series (bottom) with connecting lines to mark time points
+    
+    Raises
+    ------
+    ValueError
+        If dp is provided but doesn't contain required columns ('sample_idx', 
+        'epoch_nr', 'time', and all channel names from epo).
+    
+    Examples
+    --------
+    >>> import mne
+    >>> from mdu.plotly.mne_plotting import plot_evoked
+    >>> # Load sample data
+    >>> sample_data = mne.datasets.sample.data_path()
+    >>> raw_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw.fif'
+    >>> raw = mne.io.read_raw_fif(raw_fname, preload=True)
+    >>> raw.pick_types(meg=False, eeg=True)
+    >>> 
+    >>> # Create epochs
+    >>> events_fname = sample_data / 'MEG' / 'sample' / 'sample_audvis_raw-eve.fif'
+    >>> events = mne.read_events(events_fname)
+    >>> epochs = mne.Epochs(raw, events, tmin=-0.2, tmax=0.5)
+    >>> 
+    >>> # Simple evoked plot
+    >>> fig = plot_evoked(epochs)
+    >>> fig.show()
+    >>> 
+    >>> # With topoplots at specific times
+    >>> fig = plot_evoked(epochs, time_topo=[0.1, 0.2, 0.3])
+    >>> fig.show()
+    >>> 
+    >>> # Custom color scheme
+    >>> custom_colors = {ch: '#1f77b4' for ch in epochs.ch_names[:10]}
+    >>> fig = plot_evoked(epochs, cmap=custom_colors)
+    >>> fig.show()
+    
+    See Also
+    --------
+    mdu.plotly.multiline.multiline_plot : Underlying plotting function for time series
+    mdu.plotly.mne_plotting_utils.topoplot.create_plotly_topoplot : Topoplot creation
+    mdu.mne.mne2dataframe.mne_epochs_to_polars : Convert epochs to DataFrame
+    
+    Notes
+    -----
+    - Data is automatically scaled to microvolts (µV)
+    - Confidence intervals are computed using bootstrapping across epochs
+    - Topoplots use Clough-Tocher interpolation for smooth spatial distribution
+    - When time_topo is used, connecting lines link time points to their topoplots
+    """
+
+    dp = dp if dp is not None else mne_epochs_to_polars(epo)
+    if not all([c in dp.columns for c in ["sample_idx", "epoch_nr", "time"]]):
+        raise ValueError(
+            "DataFrame must contain 'sample_idx', 'epoch_nr', and 'time' columns in addition to all epo.ch_names."
+        )
+
+    dpp = dp.unpivot(
+        index=["sample_idx", "epoch_nr", "time"],
+        on=epo.ch_names,
+        value_name="signal",
+        variable_name="channel",
+    )
+
+    # sample channels from Viridis
+    cmap = cmap or dict(
+        zip(
+            epo.ch_names,
+            [
+                rgb_to_hex(c)
+                for c in px.colors.sample_colorscale(
+                    "Viridis", [i / len(epo.ch_names) for i in range(len(epo.ch_names))]
+                )
+            ],
+        )
+    )
+
+    figml = (
+        multiline_plot(
+            # dpp.filter(pl.col.channel.is_in(["Fp1", "Fp2"])),
+            dpp,
+            x="time",
+            y="signal",
+            color="channel",
+            line_group="epoch_idx",
+            mean=True,
+            mean_ci=True,
+            color_discrete_map=cmap,
+        )
+        .update_traces(selector=dict(fill="tonexty"), showlegend=False)
+        .for_each_trace(
+            lambda t: t.update(fillcolor=t.fillcolor.replace("0.2)", "0.1)")),
+            selector=dict(fill="tonexty"),
+        )
+    )
+
+    if time_topo is not None:
+        fig = add_time_locked_topo(dp, epo, time_topo, figml)
+    else:
+        fig = figml
+
+    return fig
+
+
+def add_time_locked_topo(
+    dp: pl.DataFrame,
+    epo: mne.BaseEpochs,
+    time_topo: list[float],
+    figml: go.Figure,
+) -> go.Figure:
+    """Add topographic maps at specific time points to an evoked plot.
+    
+    Creates a subplot layout with topoplots in the top row showing spatial
+    distribution at specified time points, and the time series plot in the
+    bottom row. Adds visual connections between time points and their
+    corresponding topoplots.
+    
+    Parameters
+    ----------
+    dp : pl.DataFrame
+        Polars DataFrame containing epoch data (from mne_epochs_to_polars).
+        Must contain 'time' column and all channel columns.
+    epo : mne.BaseEpochs
+        MNE Epochs object used for channel information and topographic mapping.
+    time_topo : list of float
+        Time points (in seconds) at which to create topoplots. Will be sorted
+        automatically. The closest matching time point in the data will be used.
+    figml : go.Figure
+        The multiline plot figure to add to the bottom subplot. This should be
+        the output from the main evoked plotting function.
+    
+    Returns
+    -------
+    go.Figure
+        Plotly Figure with subplot layout:
+        - Top row: Topoplots at each specified time point
+        - Bottom row: Time series plot spanning full width
+        - Vertical dashed lines marking topoplot time points
+        - Connecting lines from time points to topoplots
+        - Shared colorbar for all topoplots
+    
+    Notes
+    -----
+    - Topoplots are computed as mean across all epochs at each time point
+    - Color scale is normalized across all topoplots using max absolute value
+    - Subplot titles show the actual time used (after closest match)
+    - Row heights are set to 30% for topoplots, 70% for time series
+    - All topoplots share a common coloraxis for consistent scaling
+    
+    Examples
+    --------
+    This function is typically called internally by plot_evoked() when
+    time_topo is provided, but can be used directly:
+    
+    >>> import polars as pl
+    >>> from mdu.mne.mne2dataframe import mne_epochs_to_polars
+    >>> from mdu.plotly.multiline import multiline_plot
+    >>> from mdu.plotly.mne_plotting import add_time_locked_topo
+    >>> 
+    >>> # Prepare data
+    >>> dp = mne_epochs_to_polars(epochs)
+    >>> dpp = dp.unpivot(
+    ...     index=['sample_idx', 'epoch_nr', 'time'],
+    ...     on=epochs.ch_names,
+    ...     value_name='signal',
+    ...     variable_name='channel'
+    ... )
+    >>> 
+    >>> # Create base multiline plot
+    >>> figml = multiline_plot(dpp, x='time', y='signal', color='channel')
+    >>> 
+    >>> # Add topoplots
+    >>> fig = add_time_locked_topo(dp, epochs, [0.1, 0.2, 0.3], figml)
+    >>> fig.show()
+    
+    See Also
+    --------
+    plot_evoked : Main function that calls this internally
+    create_plotly_topoplot : Creates individual topoplots
+    """
+    time_topo = sorted(time_topo)
+    # select the closed matching for every ts in time_topo,
+    dm = (
+        pl.concat(
+            [
+                dp.filter(
+                    pl.col.time == dp[int(np.argmin(np.abs(dp["time"] - ts))), "time"]
+                )
+                for ts in time_topo
+            ]
+        )
+        .group_by("time", maintain_order=True)
+        .agg([pl.col(c).mean().alias(c) for c in epo.ch_names])
+    )
+
+    # we use a subplots figure
+    fig = make_subplots(
+        rows=2,
+        cols=len(dm),
+        specs=[[{}] * len(dm), [{"colspan": len(dm)}] + [None] * (len(dm) - 1)],
+        row_heights=[0.3, 0.7],
+        subplot_titles=[
+            f"Time: {row['time']:.2f}s" for row in dm.iter_rows(named=True)
+        ],  # type: ignore
+        vertical_spacing=0.01,
+    )
+    fig = fig.add_traces(figml.data, rows=2, cols=1)  # type: ignore
+    fig = (
+        fig.update_layout(
+            legend=dict(y=0.7, yanchor="top"),
+        )
+        .update_xaxes(title_text="Time [s]", row=2, col=1)
+        .update_yaxes(title="Signal [μV]", row=2, col=1)
+    )
+
+    cext = max(abs(dm[epo.ch_names].to_numpy().flatten()))  # type: ignore
+
+    for icol, row in enumerate(dm.iter_rows(named=True)):
+        topo_fig = (
+            create_plotly_topoplot(
+                np.array([row[c] for c in epo.ch_names]),
+                epo,  # type: ignore
+                blank_scaling=1,
+                contour_kwargs=dict(contours_coloring="heatmap"),
+            )
+            .update_xaxes(visible=False)
+            .update_yaxes(visible=False)
+        )
+        topo_ext = max(abs(topo_fig.data[0].x)) * 1.05
+        fig.add_traces(
+            topo_fig.data,
+            rows=1,
+            cols=icol + 1,  # type: ignore
+        ).update_xaxes(
+            range=[-topo_ext, topo_ext],
+            scaleanchor=f"y{icol + 1}",
+            row=1,
+            col=icol + 1,
+            visible=False,
+        ).update_yaxes(
+            range=[
+                -topo_ext,
+                topo_ext + topo_ext * 0.25,
+            ],  # some extra for the nose
+            scaleratio=1,
+            row=1,
+            col=icol + 1,
+            visible=False,
+        )
+
+    fig = fig.update_layout(
+        coloraxis=dict(
+            cmin=-cext,
+            cmax=cext,
+            colorscale="RdBu_r",
+            colorbar=dict(
+                title="Signal [μV]", len=0.2, y=1, thickness=10, yanchor="top"
+            ),
+        ),
+    )
+
+    topo_x_centers = [(icol + 0.5) / len(dm) for icol in range(len(dm))]
+    ts_x_positions = (dm["time"].to_numpy() - dp["time"].min()) / (  # type: ignore
+        dp["time"].max() - dp["time"].min()
+    )
+
+    # draw connecting lines with annotations from ts on the row=2 xaxis to the center of the topoplots in the top row
+    for icol, ts in enumerate(dm["time"]):
+        # lines for each ts
+        fig = fig.add_vline(
+            x=ts,
+            line=dict(color="gray", width=1, dash="dash"),
+            row=2,  # type: ignore
+            col=1,  # type: ignore
+        )
+
+        fig.add_shape(
+            type="line",
+            xref="paper",
+            yref="paper",
+            x0=ts_x_positions[icol],  # x position in evoked plot (data coordinates)
+            y0=0.7,  # depending on the row heights
+            x1=topo_x_centers[icol],  # normalized x position for topoplot
+            y1=0.73,
+            line=dict(color="gray", width=1),
+        )
 
     return fig

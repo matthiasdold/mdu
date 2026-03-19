@@ -116,7 +116,7 @@ epochs = mne.Epochs(
 df_epochs = mne_epochs_to_polars(epochs)
 
 print(f"Epochs DataFrame shape: {df_epochs.shape}")
-print(f"Unique epochs: {df_epochs['epoch_idx'].n_unique()}")
+print(f"Unique epochs: {df_epochs['epoch_nr'].n_unique()}")
 print(df_epochs.head())
 ```
 
@@ -125,14 +125,14 @@ print(df_epochs.head())
 The epochs DataFrame includes:
 - **Channel columns**: EEG/MEG data in µV
 - **time**: Time relative to event (e.g., -0.2 to 0.5s)
-- **epoch_idx**: Index identifying each epoch
+- **epoch_nr**: Index identifying each epoch
 - **sample_idx**: Global sequential sample index
 - **Metadata columns**: Any metadata from the epochs object
 
 ```{python}
 # Check metadata columns
 metadata_cols = [col for col in df_epochs.columns 
-                 if col not in ['time', 'epoch_idx', 'sample_idx'] 
+                 if col not in ['time', 'epoch_nr', 'sample_idx'] 
                  and col not in raw.ch_names]
 print(f"Metadata columns: {metadata_cols}")
 ```
@@ -160,7 +160,7 @@ epochs.metadata = metadata
 df_with_meta = mne_epochs_to_polars(epochs)
 
 print("\nDataFrame with metadata:")
-print(df_with_meta.select(['epoch_idx', 'condition', 'trial_num', 'rt', 'correct']).unique())
+print(df_with_meta.select(['epoch_nr', 'condition', 'trial_num', 'rt', 'correct']).unique())
 ```
 
 ## Analyzing Epochs by Condition
@@ -283,7 +283,7 @@ Convert MNE Epochs object to Polars DataFrame.
 
 - `epo`: MNE Epochs object (e.g., `mne.Epochs`)
 
-**Returns**: Polars DataFrame with columns for each channel (in µV), time, epoch_idx, sample_idx, and any metadata columns
+**Returns**: Polars DataFrame with columns for each channel (in µV), time, epoch_nr, sample_idx, and any metadata columns
 
 ## Tips
 

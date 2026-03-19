@@ -29,14 +29,15 @@ Create publication-ready multi-line plots with:
 
 **Key functions**: `multiline_plot`, `add_meta_info`
 
-### [MNE Topoplots](mne_topoplot.qmd)
-Interactive EEG/MEG topographic maps from MNE-Python data:
+### [MNE Plotting](mne_plotting.qmd)
+Interactive EEG/MEG visualization with topographic maps and evoked responses:
 - Spatial distribution visualization with smooth interpolation
+- Event-related potential plots with confidence intervals
+- Time-locked topoplots showing activity at specific time points
 - Automatic channel positioning from MNE info
 - Customizable colorscales and styling
-- Integration with evoked responses and spectrum data
 
-**Key functions**: `create_plotly_topoplot`
+**Key functions**: `plot_evoked`, `create_plotly_topoplot`
 
 ### [MNE to DataFrame Conversion](mne_dataframe.qmd)
 Convert MNE Raw and Epochs objects to Polars DataFrames for flexible data analysis:
