@@ -260,6 +260,7 @@ Create interactive evoked response plot with optional topoplots.
 - `dp` (pl.DataFrame, optional): Pre-computed DataFrame from mne_epochs_to_polars()
 - `time_topo` (list of float, optional): Time points for topographic maps
 - `cmap` (dict, optional): Custom color mapping for channels
+- `mean_ci` (bool, optional): Whether to show mean confidence interval shading, default True
 
 **Returns**: Plotly Figure
 
