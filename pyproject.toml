@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mdu"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{name="Matthias Dold", email="matthias.dold@gmx.de"}]
 description = "Utility functions for data analysis and visualization."
 readme ="README.md"
@@ -23,14 +23,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: plotly",
     "Topic :: Scientific/Engineering :: mne",
 ]
-
-[project.urls]
-Homepage = "https://github.com/matthiasdold/mdu"
-Documentation = "https://matthiasdold.github.io/mdu/"
-Repository = "https://github.com/matthiasdold/mdu"
-Issues = "https://github.com/matthiasdold/mdu/issues"
-Changelog = "https://github.com/matthiasdold/mdu/releases"
-
 dependencies = [
     "numpy>=2.2.6",
     "scipy>=1.15.3",
@@ -43,6 +35,13 @@ dependencies = [
     "loguru>=0.7.0",
     "polars>=1.38.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/matthiasdold/mdu"
+Documentation = "https://matthiasdold.github.io/mdu/"
+Repository = "https://github.com/matthiasdold/mdu"
+Issues = "https://github.com/matthiasdold/mdu/issues"
+Changelog = "https://github.com/matthiasdold/mdu/releases"
 
 [project.optional-dependencies]
 dev = ["pytest>=9.0.2", "pytest-cov>=7.0.0", "ipython>=8.38.0", "ruff"]
