@@ -8,6 +8,8 @@
 This repo includes common functionality I often use during analysis of
 electrophysiology data.
 
+Checkout [the documentation](https://matthiasdold.github.io/mdu/docs/index.html)
+
 
 ## Installation
 
