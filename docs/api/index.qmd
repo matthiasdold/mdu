@@ -70,6 +70,15 @@ MNE event mapping utilities
 | --- | --- |
 | [inverse_map_events](inverse_map_events.qmd#mdu.mne.events.inverse_map_events) | Inverse map of events in evid -> use numbers in evid values if present |
 
+## MNE Data Conversion
+
+⭐ Convert MNE Raw and Epochs to Polars DataFrames
+
+| | |
+| --- | --- |
+| [mne_raw_to_polars](mne_raw_to_polars.qmd#mdu.mne.mne2dataframe.mne_raw_to_polars) | Convert MNE Raw object to Polars DataFrame. |
+| [mne_epochs_to_polars](mne_epochs_to_polars.qmd#mdu.mne.mne2dataframe.mne_epochs_to_polars) | Convert MNE Epochs object to Polars DataFrame. |
+
 ## Type Converters
 
 Type conversion utilities

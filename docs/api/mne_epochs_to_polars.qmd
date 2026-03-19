@@ -1,0 +1,41 @@
+# mne_epochs_to_polars { #mdu.mne.mne2dataframe.mne_epochs_to_polars }
+
+```python
+mne.mne2dataframe.mne_epochs_to_polars(epo: mne.BaseEpochs)
+```
+
+Convert MNE Epochs object to Polars DataFrame.
+
+Converts epoched EEG/MEG data from MNE format to a long-format Polars DataFrame.
+Data is automatically scaled from Volts to microvolts (µV). If the epochs object
+contains metadata, it is automatically joined to each epoch's data.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type           | Description                                                                    | Default    |
+|--------|----------------|--------------------------------------------------------------------------------|------------|
+| epo    | mne.BaseEpochs | MNE Epochs object (e.g., mne.Epochs, mne.EpochsArray) containing epoched data. | _required_ |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type         | Description                                                                                                                                                                                                                                                                                                                        |
+|--------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|        | pl.DataFrame | Polars DataFrame with columns: - Channel columns: One column per channel with data in µV - time: Time in seconds relative to epoch onset - epoch_idx: Index identifying each epoch (0 to n_epochs-1) - sample_idx: Global continuous sample index across all epochs - Metadata columns: Any columns from epo.metadata (if present) |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import mne
+>>> from mdu.mne.mne2dataframe import mne_epochs_to_polars
+>>> # Create sample epochs
+>>> info = mne.create_info(['Ch1', 'Ch2'], sfreq=100, ch_types='eeg')
+>>> data = np.random.randn(5, 2, 50) * 1e-6  # 5 epochs, 2 channels, 50 times
+>>> epochs = mne.EpochsArray(data, info)
+>>> df = mne_epochs_to_polars(epochs)
+>>> df.shape
+(250, 5)  # 5 epochs * 50 timepoints, with Ch1, Ch2, time, epoch_idx, sample_idx
+```
+
+## See Also {.doc-section .doc-section-see-also}
+
+mne_raw_to_polars : Convert continuous Raw data to DataFrame

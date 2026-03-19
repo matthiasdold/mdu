@@ -1,0 +1,40 @@
+# mne_raw_to_polars { #mdu.mne.mne2dataframe.mne_raw_to_polars }
+
+```python
+mne.mne2dataframe.mne_raw_to_polars(raw: mne.io.BaseRaw)
+```
+
+Convert MNE Raw object to Polars DataFrame.
+
+Converts continuous EEG/MEG data from MNE format to a long-format Polars DataFrame.
+Data is automatically scaled from Volts to microvolts (µV).
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type           | Description                                                                    | Default    |
+|--------|----------------|--------------------------------------------------------------------------------|------------|
+| raw    | mne.io.BaseRaw | MNE Raw object (e.g., mne.io.Raw, mne.io.RawArray) containing continuous data. | _required_ |
+
+## Returns {.doc-section .doc-section-returns}
+
+| Name   | Type         | Description                                                                                                                                                                                  |
+|--------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|        | pl.DataFrame | Polars DataFrame with columns: - Channel columns: One column per channel with data in µV - time: Time in seconds from recording start - sample_idx: Sequential sample index (0 to n_times-1) |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> import mne
+>>> from mdu.mne.mne2dataframe import mne_raw_to_polars
+>>> # Create sample raw data
+>>> info = mne.create_info(['Ch1', 'Ch2'], sfreq=100, ch_types='eeg')
+>>> data = np.random.randn(2, 1000) * 1e-6  # 2 channels, 1000 timepoints
+>>> raw = mne.io.RawArray(data, info)
+>>> df = mne_raw_to_polars(raw)
+>>> df.shape
+(1000, 4)  # 1000 timepoints, with Ch1, Ch2, time, sample_idx
+```
+
+## See Also {.doc-section .doc-section-see-also}
+
+mne_epochs_to_polars : Convert epoched data to DataFrame

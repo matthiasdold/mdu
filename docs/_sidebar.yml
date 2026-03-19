@@ -33,6 +33,10 @@ website:
       - docs/api/inverse_map_events.qmd
       section: MNE Events
     - contents:
+      - docs/api/mne_raw_to_polars.qmd
+      - docs/api/mne_epochs_to_polars.qmd
+      section: MNE Data Conversion
+    - contents:
       - docs/api/ToFloatConverter.qmd
       section: Type Converters
     id: docs/api
