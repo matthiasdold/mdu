@@ -3,7 +3,7 @@ name: Build and Publish Python Package
 on:
   push:
     tags:
-      - 'v*'  # Triggers the workflow when a tag starting with 'v' is pushed (e.g., v1.0.0)
+      - 'v*'  # Triggers the workflow when a tag starting with 'v' is pushed (e.g., v1.0.0), only trigger on tag (cannot combine this with filter on branch...)
 
 jobs:
   build-and-publish:
@@ -31,12 +31,6 @@ jobs:
 
       - name: Build the package (sdist and wheel)
         run: python -m build
-
-      - name: Download all the dists
-        uses: actions/download-artifact@v6
-        with:
-          name: python-package-distributions
-          path: dist/
 
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
