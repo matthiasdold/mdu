@@ -40,10 +40,10 @@ Beautiful interactive plots with custom templates, metadata annotations, and sup
 :::
 
 ::: {.g-col-6}
-### 🧠 MNE Topoplots
-Interactive EEG/MEG topographic maps with smooth interpolation and automatic channel positioning from MNE-Python data.
+### 🧠 MNE Plotting
+Plotting utilities to create plotly plots from mne instances for raw or epoched data.
 
-[See Examples →](examples/mne_topoplot.qmd)
+[See Examples →](examples/mne_plotting.qmd)
 :::
 
 :::

@@ -8,7 +8,7 @@ from mdu.plotly.shared import hex_to_rgba
 from mdu.utils.logging import get_logger
 from mdu.plotly.stats import add_cluster_permut_sig_to_plotly
 
-logger = get_logger("mdu.plotly.html_grids")
+logger = get_logger("mdu.plotly.multiline")
 
 
 def multiline_plot(

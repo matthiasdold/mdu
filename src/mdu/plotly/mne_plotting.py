@@ -413,6 +413,7 @@ def plot_evoked(
     dp: Optional[pl.DataFrame] = None,
     time_topo: Optional[list[float]] = None,
     cmap: Optional[dict[str, str]] = None,
+    mean_ci: bool = True,
 ) -> go.Figure:
     """Create interactive evoked response plot with optional topoplots.
 
@@ -436,6 +437,9 @@ def plot_evoked(
     cmap : dict of str to str, optional
         Custom color map for channels. Keys are channel names, values are hex colors.
         If None, uses Viridis colorscale sampled across all channels. Default is None.
+    mean_ci : bool, optional
+        If True, show confidence intervals (SEM) around the mean trace for each channel.
+        If False, only the mean trace is shown. Default is True.
 
     Returns
     -------
@@ -494,6 +498,7 @@ def plot_evoked(
     """
 
     dp = dp if dp is not None else mne_epochs_to_polars(epo)
+
     if not all([c in dp.columns for c in ["sample_idx", "epoch_nr", "time"]]):
         raise ValueError(
             "DataFrame must contain 'sample_idx', 'epoch_nr', and 'time' columns in addition to all epo.ch_names."
@@ -504,7 +509,7 @@ def plot_evoked(
         on=epo.ch_names,
         value_name="signal",
         variable_name="channel",
-    )
+    ).with_columns(pl.col.channel.alias("channel_aux"))
 
     # sample channels from Viridis
     cmap = cmap or dict(
@@ -521,14 +526,15 @@ def plot_evoked(
 
     figml = (
         multiline_plot(
-            # dpp.filter(pl.col.channel.is_in(["Fp1", "Fp2"])),
-            dpp,
+            dpp.drop(
+                "sample_idx"
+            ),  # drop sample_idx as it is not counted within each epoch_nr only, but absolute
             x="time",
             y="signal",
             color="channel",
-            line_group="epoch_idx",
+            line_group="epoch_nr",
             mean=True,
-            mean_ci=True,
+            mean_ci=mean_ci,
             color_discrete_map=cmap,
         )
         .update_traces(selector=dict(fill="tonexty"), showlegend=False)
@@ -651,7 +657,7 @@ def add_time_locked_topo(
     fig = fig.add_traces(figml.data, rows=2, cols=1)  # type: ignore
     fig = (
         fig.update_layout(
-            legend=dict(y=0.7, yanchor="top"),
+            legend=dict(y=0.0, yanchor="bottom", title="Channels", maxheight=0.7),
         )
         .update_xaxes(title_text="Time [s]", row=2, col=1)
         .update_yaxes(title="Signal [μV]", row=2, col=1)
@@ -698,7 +704,11 @@ def add_time_locked_topo(
             cmax=cext,
             colorscale="RdBu_r",
             colorbar=dict(
-                title="Signal [μV]", len=0.2, y=1, thickness=10, yanchor="top"
+                title="Signal [μV]",
+                thickness=10,
+                len=0.2,
+                y=1,
+                yanchor="top",
             ),
         ),
     )
