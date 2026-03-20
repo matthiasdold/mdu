@@ -509,7 +509,7 @@ def plot_evoked(
         on=epo.ch_names,
         value_name="signal",
         variable_name="channel",
-    ).with_columns(pl.col.channel.alias("channel_aux"))
+    )
 
     # sample channels from Viridis
     cmap = cmap or dict(
@@ -543,6 +543,13 @@ def plot_evoked(
             selector=dict(fill="tonexty"),
         )
     )
+
+    # ensure ordering in the legend matches how the channels are in epo.ch_names
+    for i, ch in enumerate(epo.ch_names):
+        figml = figml.update_traces(
+            selector=dict(legendgroup=ch),
+            legendrank=i,
+        )
 
     if time_topo is not None:
         fig = add_time_locked_topo(dp, epo, time_topo, figml)
